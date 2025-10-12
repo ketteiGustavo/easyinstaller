@@ -1,0 +1,46 @@
+{
+  "type": "export",
+  "date": "2025-10-12",
+  "system": {
+    "version": "1.0.0",
+    "user": "",
+    "native": "apt"
+  },
+  "packages": {
+    "apt": {
+      "name": "exemple-app",
+      "version": "1.2.3",
+      "description": "An example application",
+      "size": 2048000,
+      "dependencies": []
+    },
+    "dnf": {
+      "name": "exemple-app",
+      "version": "1.2.3",
+      "description": "An example application",
+      "size": 2048000,
+      "dependencies": []
+    },
+    "pacman": {
+      "name": "exemple-app",
+      "version": "1.2.3",
+      "description": "An example application",
+      "size": 2048000,
+      "dependencies": []
+    },
+    "flatpak": {
+      "name": "com.example.ExampleApp",
+      "version": "1.2.3",
+      "description": "An example application",
+      "size": 4096000,
+      "dependencies": []
+    },
+    "snap": {
+      "name": "example-app",
+      "version": "1.2.3",
+      "description": "An example application",
+      "size": 5120000,
+      "dependencies": []
+    }
+  }
+}

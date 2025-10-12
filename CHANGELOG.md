@@ -2,3 +2,4 @@
 - :✨: feat: 0 (por: Luiz Gustavo em 12-10-2025 11:03)
 - :✨: feat: controle de cores (por: Luiz Gustavo em 12-10-2025 11:04)
 - :✨: feat: opção de multipla seleção (por: Luiz Gustavo em 12-10-2025 11:21)
+- :✨: feat: listar programas instalados (por: Luiz Gustavo em 12-10-2025 11:48)

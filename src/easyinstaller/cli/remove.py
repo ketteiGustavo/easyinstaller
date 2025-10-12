@@ -1,13 +1,15 @@
 import typer
 from rich.console import Console
 
-from easyinstaller.core.package_handler import remove_package
+from easyinstaller.cli.utils.ask import ask_user_to_select_packages
+from easyinstaller.core.package_handler import remove_with_manager
+from easyinstaller.core.searcher import unified_search
 
 console = Console()
 
 app = typer.Typer(
     name='rm',
-    help='Remove a package using a specific package manager.',
+    help='Find and remove a package from any available source (apt, flatpak, snap).',
     no_args_is_help=True,
 )
 
@@ -15,19 +17,43 @@ app = typer.Typer(
 @app.callback(invoke_without_command=True)
 def rm(
     packages: list[str] = typer.Argument(
-        ..., help='One or more packages to remove.'
-    )
+        ..., help='One or more packages to search for and remove.'
+    ),
+    purge: bool = typer.Option(
+        False,
+        '--purge',
+        help='Use "purge" instead of "remove" for apt (removes configuration files).',
+    ),
 ):
     """
-    Removes one or more packages using the system's native package manager.
+    Finds and removes one or more packages from any available source.
     """
-    for package in packages:
+    for package_query in packages:
         console.print(
-            f'Removing [bold yellow]{package}[/bold yellow] using native package manager...'
+            f"---\n[bold]Searching for [yellow]'{package_query}'[/yellow] to remove...[/bold]"
         )
-        try:
-            remove_package(package_name=package)
-        except Exception as e:
+        results = unified_search(package_query)
+
+        if not results:
             console.print(
-                f'[red]An error occurred for package {package}:[/red] {e}'
+                f"No installed packages found matching [yellow]'{package_query}'[/yellow]."
             )
+            continue
+
+        selected_packages = ask_user_to_select_packages(results)
+
+        if selected_packages:
+            for package in selected_packages:
+                console.print(
+                    f"Removing [green]{package['name']}[/green] from [cyan]{package['source']}[/cyan]..."
+                )
+                try:
+                    remove_with_manager(
+                        package_name=package['id'],
+                        manager=package['source'],
+                        purge=purge,
+                    )
+                except Exception as e:
+                    console.print(
+                        f"[red]An error occurred while removing {package['name']}:[/red] {e}"
+                    )

@@ -76,6 +76,34 @@ def remove_package(package_name: str):
     )
 
 
+def remove_with_manager(package_name: str, manager: str, purge: bool = False):
+    """Constructs and prints the removal command for a given package using a specific manager."""
+    command = ''
+    if manager == 'flatpak':
+        command = f'flatpak uninstall {package_name} -y'
+    elif manager == 'snap':
+        command = f'sudo snap remove {package_name}'
+    else:
+        commands = get_package_manager_commands()
+        if commands and (
+            manager in commands['remove'] or manager in commands['install']
+        ):
+            base_command = commands['remove']
+            if purge and 'apt' in base_command:
+                base_command = base_command.replace('remove', 'purge')
+            command = f'{base_command} {package_name}'
+        else:
+            console.print(
+                f'[red]Error:[/red] Unsupported or unknown manager: {manager}'
+            )
+            raise typer.Exit(1)
+
+    if command:
+        console.print(
+            f"[bold red]>>>[/bold red] Pretending to run: '[cyan]{command}[/cyan]'"
+        )
+
+
 def install_with_manager(package_name: str, manager: str):
     """Constructs and prints the installation command for a given package using a specific manager."""
     if manager == 'flatpak':
