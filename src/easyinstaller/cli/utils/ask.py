@@ -1,36 +1,43 @@
 import questionary
 from rich.console import Console
 
+from easyinstaller.styles.styles import custom_style
+
 console = Console()
 
+CANCEL_VALUE = {'id': '__CANCEL__'}
 
-def ask_user_to_select_package(choices: list[dict]) -> dict | None:
-    """Given a list of packages, asks the user to select one."""
+
+def ask_user_to_select_packages(choices: list[dict]) -> list[dict] | None:
+    """Given a list of packages, asks the user to select one or more."""
     if not choices:
-        console.print("[yellow]No packages found.[/yellow]")
+        console.print('[yellow]No packages found.[/yellow]')
         return None
 
     # Format choices for questionary
     formatted_choices = [
-        f"{choice['name']} [{choice['source']}] - {choice['summary']}"
+        {
+            'name': f"{choice['name']} [{choice['source']}] - {choice['summary']}",
+            'value': choice,
+            'checked': False,
+        }
         for choice in choices
     ]
-    formatted_choices.append(questionary.Separator())
-    formatted_choices.append("Cancel")
 
-    selected_choice_str = questionary.select(
-        "Found multiple packages. Please select one to install:",
+    formatted_choices.append(questionary.Separator('-' * 15))
+    formatted_choices.append(
+        {'name': 'Cancel', 'value': CANCEL_VALUE, 'checked': False}
+    )
+
+    selected_choices = questionary.checkbox(
+        'Found multiple packages. Please select one or more to install:',
         choices=formatted_choices,
-        use_indicator=True,
+        style=custom_style,
     ).ask()
 
-    if not selected_choice_str or selected_choice_str == "Cancel":
-        console.print("[red]Installation cancelled.[/red]")
+    # If user cancels by pressing Enter or selecting the 'Cancel' option
+    if not selected_choices or CANCEL_VALUE in selected_choices:
+        console.print('[red]Installation cancelled.[/red]')
         return None
 
-    # Find the original dictionary corresponding to the selected string
-    for choice in choices:
-        if selected_choice_str.startswith(f"{choice['name']} [{choice['source']}]"):
-            return choice
-    
-    return None # Should not be reached
+    return selected_choices

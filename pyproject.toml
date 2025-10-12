@@ -2,9 +2,7 @@
 name = "easyinstaller"
 version = "0.1.0"
 description = "A universal installation manager for Linux."
-authors = [
-    {name = "Luiz Gustavo",email = "luizgcesar@gmail.com"}
-]
+authors = [{ name = "Luiz Gustavo", email = "luizgcesar@gmail.com" }]
 readme = "README.md"
 requires-python = ">=3.13, <4.0"
 dependencies = [
@@ -13,11 +11,13 @@ dependencies = [
     "loguru (>=0.7.3,<0.8.0)",
     "python-dotenv (>=1.1.1,<2.0.0)",
     "questionary (>=2.1.1,<3.0.0)",
-    "requests (>=2.32.5,<3.0.0)"
+    "requests (>=2.32.5,<3.0.0)",
+    "blue (>=0.9.1,<0.10.0)",
+    "isort (>=7.0.0,<8.0.0)",
 ]
 
 [tool.poetry]
-packages = [{include = "easyinstaller", from = "src"}]
+packages = [{ include = "easyinstaller", from = "src" }]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -25,3 +25,5 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 ei = "easyinstaller.main:app"
+format = "easyinstaller.utils.cli:format"
+lint = "easyinstaller.utils.cli:lint"

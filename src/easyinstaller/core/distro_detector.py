@@ -13,7 +13,7 @@ def get_distro_id() -> str:
     """
     try:
         release_info = platform.freedesktop_os_release()
-        return release_info.get("ID", "").lower()
+        return release_info.get('ID', '').lower()
     except OSError:
         # This can happen if /etc/os-release doesn't exist
-        return "unknown"
+        return 'unknown'
