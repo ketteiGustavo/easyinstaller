@@ -1,0 +1,114 @@
+{
+  // ========= EditorConfig =========
+  "editorconfig.enable": true,
+
+  // ============== Git ==============
+  "files.exclude": {
+    "**/.git": false
+  },
+
+  // ========= Formatação e limpeza =========
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "files.trimTrailingWhitespace": true,
+  "diffEditor.ignoreTrimWhitespace": true,
+  "editor.renderWhitespace": "trailing",
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  "mypy.runUsingActiveInterpreter": true,
+  "mypy.dmypyExecutable": "dmypy",
+
+  // ========= Markdown =========
+  "[markdown]": {
+    "editor.wordWrap": "on",
+    "editor.quickSuggestions": {
+      "other": true,
+      "comments": true,
+      "strings": true
+    }
+  },
+
+  // ========= Prettier como formatador padrão =========
+  "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[html]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[css]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[javascript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+
+  // ========= Better Align =========
+  "betterAlign.separator": "=",
+  "betterAlign.padding": "auto",
+  "betterAlign.ignore": ["node_modules/**", "dist/**", "build/**"],
+  "betterAlign.surroundSpace": {
+    "colon": [1, 2],
+    "assignment": [1, 1],
+    "arrow": [1, 1],
+    "comment": 2
+  },
+
+  // ========= Better Comments =========
+  "better-comments.tags": [
+    { "tag": "!", "color": "#FF2D00", "bold": true },
+    { "tag": "?", "color": "#3498DB", "bold": true },
+    { "tag": "todo", "color": "#FF8C00" },
+    { "tag": "*", "color": "#98C379" },
+    { "tag": "note", "color": "#B392F0", "italic": true },
+    {
+      "tag": "deprecated",
+      "color": "#999999",
+      "strikethrough": true,
+      "italic": true
+    }
+  ],
+
+  // ========= CodeSnap =========
+  "codesnap.backgroundColor": "transparent",
+  "codesnap.boxShadow": "none",
+  "codesnap.containerPadding": "24px",
+  "codesnap.roundedCorners": true,
+  "codesnap.transparentBackground": true,
+  "codesnap.showWindowControls": false,
+
+  // ========= TODO Highlight =========
+  "todohighlight.isEnable": true,
+  "todohighlight.keywords": [
+    {
+      "text": "TODO",
+      "color": "#ffffff",
+      "backgroundColor": "#FF8C00",
+      "overviewRulerColor": "#FF8C00"
+    },
+    {
+      "text": "FIXME",
+      "color": "#ffffff",
+      "backgroundColor": "#E74C3C",
+      "overviewRulerColor": "#E74C3C"
+    },
+    {
+      "text": "BUG",
+      "color": "#ffffff",
+      "backgroundColor": "#C0392B",
+      "overviewRulerColor": "#C0392B"
+    },
+    {
+      "text": "NOTE",
+      "color": "#000000",
+      "backgroundColor": "#F1C40F",
+      "overviewRulerColor": "#F1C40F"
+    },
+    {
+      "text": "HACK",
+      "color": "#000000",
+      "backgroundColor": "#1ABC9C",
+      "overviewRulerColor": "#1ABC9C"
+    }
+  ],
+
+  // ========= Trailing Spaces =========
+  "trailing-spaces.trimOnSave": true,
+  "trailing-spaces.includeEmptyLines": true,
+  "trailing-spaces.deleteModifiedLinesOnly": false,
+  "trailing-spaces.highlightColor": "rgba(255,0,0,0.25)"
+}
