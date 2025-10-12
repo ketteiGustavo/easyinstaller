@@ -1,3 +1,4 @@
+import os
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
 
@@ -5,23 +6,27 @@ from concurrent.futures import ThreadPoolExecutor
 def list_snap_packages():
     """Lists installed Snap packages."""
     try:
-        # The `snap list` command provides nicely formatted output.
-        # We skip the header line with [1:]
+        env = dict(os.environ, LC_ALL='C')
         result = subprocess.run(
-            ['snap', 'list'], capture_output=True, text=True, check=True
+            ['snap', 'list'],
+            capture_output=True,
+            text=True,
+            check=True,
+            env=env,
         )
         lines = result.stdout.strip().split('\n')[1:]
         packages = []
         for line in lines:
             parts = line.split()
-            packages.append(
-                {
-                    'name': parts[0],
-                    'version': parts[1],
-                    'size': parts[4] if len(parts) > 4 else 'N/A',
-                    'source': 'snap',
-                }
-            )
+            if len(parts) >= 2:
+                packages.append(
+                    {
+                        'name': parts[0],
+                        'version': parts[1],
+                        'size': 'N/A',  # snap list does not provide size info
+                        'source': 'snap',
+                    }
+                )
         return packages
     except (subprocess.CalledProcessError, FileNotFoundError):
         return []
@@ -30,17 +35,18 @@ def list_snap_packages():
 def list_flatpak_packages():
     """Lists installed Flatpak packages."""
     try:
-        # Flatpak allows specifying columns, which is very helpful.
+        env = dict(os.environ, LC_ALL='C')
         result = subprocess.run(
             ['flatpak', 'list', '--app', '--columns=name,version,size'],
             capture_output=True,
             text=True,
             check=True,
+            env=env,
         )
         lines = result.stdout.strip().split('\n')
         packages = []
         for line in lines:
-            parts = line.split('\t')   # Columns are tab-separated
+            parts = line.split('\t')
             if len(parts) >= 3:
                 packages.append(
                     {
@@ -57,10 +63,8 @@ def list_flatpak_packages():
 
 def list_apt_packages():
     """Lists installed APT packages."""
-    # This is more complex as apt doesn't have a simple, clean output for this.
-    # We'll use dpkg-query as it's better for scripting.
     try:
-        # Get package name, version, and installed size.
+        env = dict(os.environ, LC_ALL='C')
         result = subprocess.run(
             [
                 'dpkg-query',
@@ -70,13 +74,13 @@ def list_apt_packages():
             capture_output=True,
             text=True,
             check=True,
+            env=env,
         )
         lines = result.stdout.strip().split('\n')
         packages = []
         for line in lines:
             parts = line.replace("'", '').split('\t')
             if len(parts) >= 3:
-                # Convert size from KB to a human-readable format
                 size_kb = int(parts[2])
                 size_mb = size_kb / 1024
                 size_str = f'{size_mb:.2f} MB'
@@ -105,7 +109,6 @@ def unified_lister(managers: list[str] | None = None):
     }
 
     with ThreadPoolExecutor() as executor:
-        # Only submit jobs for the requested managers
         futures = {
             executor.submit(source_map[manager])
             for manager in managers
@@ -117,7 +120,55 @@ def unified_lister(managers: list[str] | None = None):
             try:
                 all_results.extend(future.result())
             except Exception:
-                # In a real app, you'd log this error
                 pass
 
     return all_results
+
+
+def get_installed_apt_packages_set() -> set:
+    """Returns a set of installed apt package names."""
+    try:
+        env = dict(os.environ, LC_ALL='C')
+        result = subprocess.run(
+            ['dpkg-query', '-W', "-f='${Package}\n'"],
+            capture_output=True,
+            text=True,
+            check=True,
+            env=env,
+        )
+        return set(result.stdout.replace("'", '').strip().split('\n'))
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return set()
+
+
+def get_installed_flatpak_packages_set() -> set:
+    """Returns a set of installed flatpak application IDs."""
+    try:
+        env = dict(os.environ, LC_ALL='C')
+        result = subprocess.run(
+            ['flatpak', 'list', '--app', '--columns=application'],
+            capture_output=True,
+            text=True,
+            check=True,
+            env=env,
+        )
+        return set(result.stdout.strip().split('\n'))
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return set()
+
+
+def get_installed_snap_packages_set() -> set:
+    """Returns a set of installed snap package names."""
+    try:
+        env = dict(os.environ, LC_ALL='C')
+        result = subprocess.run(
+            ['snap', 'list'],
+            capture_output=True,
+            text=True,
+            check=True,
+            env=env,
+        )
+        lines = result.stdout.strip().split('\n')[1:]
+        return {line.split()[0] for line in lines}
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return set()

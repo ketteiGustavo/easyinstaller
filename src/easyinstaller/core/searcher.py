@@ -5,7 +5,7 @@ import requests
 
 
 def unified_search(query: str) -> list[dict]:
-    """Performs a search across apt, flathub, and snapcraft in parallel."""
+    """Performs a search across apt, flathub, and snapcraft in parallel and sorts by relevance."""
     with ThreadPoolExecutor() as executor:
         futures = [
             executor.submit(search_apt, query),
@@ -20,6 +20,19 @@ def unified_search(query: str) -> list[dict]:
             except Exception as e:
                 # In a real app, you'd log this error
                 print(f'Error during search: {e}')
+
+    # Sort results by relevance
+    def sort_key(result):
+        name = result['name'].lower()
+        lower_query = query.lower()
+        if name == lower_query:
+            return (0, name)  # Exact match
+        elif name.startswith(lower_query):
+            return (1, name)  # Starts with query
+        else:
+            return (2, name)  # Contains query
+
+    all_results.sort(key=sort_key)
 
     return all_results
 
