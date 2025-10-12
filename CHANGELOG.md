@@ -1,0 +1,1 @@
+- :✨: feat: busca para instalar pacote (por: Luiz Gustavo em 12-10-2025 10:59)

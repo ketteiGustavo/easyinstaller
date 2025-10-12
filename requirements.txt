@@ -1,0 +1,20 @@
+certifi==2025.10.5
+charset-normalizer==3.4.3
+click==8.3.0
+# Editable install with no version control (easyinstaller==0.1.0)
+-e /home/luiz/workspaces/easyinstaller
+idna==3.10
+loguru==0.7.3
+markdown-it-py==4.0.0
+mdurl==0.1.2
+prompt_toolkit==3.0.52
+Pygments==2.19.2
+python-dotenv==1.1.1
+questionary==2.1.1
+requests==2.32.5
+rich==14.2.0
+shellingham==1.5.4
+typer==0.19.2
+typing_extensions==4.15.0
+urllib3==2.5.0
+wcwidth==0.2.14
