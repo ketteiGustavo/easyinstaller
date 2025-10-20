@@ -92,7 +92,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-glibc
-          path: dist/*
+          path: dist/ei-linux-glibc2.31-amd64
 
   build-musl:
     runs-on: ubuntu-latest
@@ -166,7 +166,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-musl
-          path: dist/*
+          path: dist/ei-linux-musl-amd64
 
   test-glibc-matrix:
     runs-on: ubuntu-latest
