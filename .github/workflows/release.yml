@@ -26,11 +26,7 @@ jobs:
 
       - name: Build portable (glibc 2.31) on Debian bullseye
         run: |
-          UID_HOST=$(id -u)
-          GID_HOST=$(id -g)
-
           docker run --rm \
-            --user ${UID_HOST}:${GID_HOST} \
             -v "${GITHUB_WORKSPACE}":/app \
             -w /app \
             python:3.13-bullseye \
@@ -54,7 +50,7 @@ jobs:
                 return 1
               }
 
-              apt_retry update || { echo "APT UPDATE falhou"; apt-get -V update || true; cat /var/log/apt/term.log 2>/dev/null || true; exit 100; }
+              apt_retry update || { echo "APT UPDATE falhou"; cat /var/log/apt/term.log 2>/dev/null || true; exit 100; }
               apt_retry install -y --no-install-recommends patchelf gcc ccache ca-certificates || { echo "APT INSTALL falhou"; cat /var/log/apt/term.log 2>/dev/null || true; exit 100; }
 
               python -V
@@ -79,6 +75,7 @@ jobs:
                 --output-filename=ei-linux-glibc2.31-amd64 \
                 src/easyinstaller/main.py
 
+              # Garantir leitura e travessia de diretórios para o runner
               chmod -R a+rX dist
             '
 
@@ -96,11 +93,7 @@ jobs:
 
       - name: Build (musl) on Alpine
         run: |
-          UID_HOST=$(id -u)
-          GID_HOST=$(id -g)
-
           docker run --rm \
-            --user ${UID_HOST}:${GID_HOST} \
             -v "${GITHUB_WORKSPACE}":/app \
             -w /app \
             python:3.13-alpine \
@@ -184,16 +177,13 @@ jobs:
               chmod +x ./ei-linux-glibc2.31-amd64
 
               # Instala runtime mínima para rodar --help/--version
-              try_install() {
-                if command -v apt-get >/dev/null 2>&1; then
-                  apt-get update && apt-get install -y --no-install-recommends libstdc++6 ca-certificates
-                elif command -v dnf >/dev/null 2>&1; then
-                  dnf -y install libstdc++ ca-certificates || true
-                elif command -v pacman >/dev/null 2>&1; then
-                  pacman -Sy --noconfirm gcc-libs ca-certificates || true
-                fi
-              }
-              try_install
+              if command -v apt-get >/dev/null 2>&1; then
+                apt-get update && apt-get install -y --no-install-recommends libstdc++6 ca-certificates
+              elif command -v dnf >/dev/null 2>&1; then
+                dnf -y install libstdc++ ca-certificates || true
+              elif command -v pacman >/dev/null 2>&1; then
+                pacman -Sy --noconfirm gcc-libs ca-certificates || true
+              fi
 
               ./ei-linux-glibc2.31-amd64 --help >/dev/null 2>&1 || ./ei-linux-glibc2.31-amd64 --version >/dev/null 2>&1
             '
