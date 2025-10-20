@@ -147,7 +147,6 @@ jobs:
               poetry run python -m nuitka \
                 --onefile \
                 --standalone \
-                --static-libpython=yes \
                 --assume-yes-for-downloads \
                 --jobs=$(nproc) \
                 --include-module=typer \
@@ -195,13 +194,14 @@ jobs:
               set -e
               chmod +x ./ei-linux-glibc2.31-amd64
 
-              # Instala runtime mínima para rodar --help/--version
+              # Instala runtime mínima para rodar --help/--version, mas sem derrubar o step
               if command -v apt-get >/dev/null 2>&1; then
-                apt-get update && apt-get install -y --no-install-recommends libstdc++6 ca-certificates
+                apt-get update && apt-get install -y --no-install-recommends libstdc++6 ca-certificates || true
               elif command -v dnf >/dev/null 2>&1; then
                 dnf -y install libstdc++ ca-certificates || true
               elif command -v pacman >/dev/null 2>&1; then
-                pacman -Sy --noconfirm gcc-libs ca-certificates || true
+                # Em Arch, às vezes reinstala e retorna 1; não deixe isso quebrar o step.
+                pacman -Sy --noconfirm --needed gcc-libs ca-certificates || true
               fi
 
               ./ei-linux-glibc2.31-amd64 --help >/dev/null 2>&1 || ./ei-linux-glibc2.31-amd64 --version >/dev/null 2>&1
