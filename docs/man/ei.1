@@ -1,0 +1,45 @@
+.\" Man page for ei
+.\" Contact luizg.devlx@gmail.com to correct errors or typos.
+.\"
+.TH ei 1 "October 2025" "easyinstaller 0.1.0" "easyinstaller man page"
+.SH NAME
+ei - A universal installation manager for Linux.
+
+.SH SYNOPSIS
+.B ei
+[OPTIONS] COMMAND [ARGS]...
+
+.SH DESCRIPTION
+.B easyinstaller (ei)
+ is a command-line tool to simplify package management across different Linux package managers like APT, Flatpak, and Snap. It provides a unified interface to add, remove, list, and manage packages.
+
+.SH COMMANDS
+.TP
+.B add <package_name>...
+Find and install a package from any available source (apt, flatpak, snap).
+.TP
+.B rm <package_name>...
+Remove an installed package. Use -y for non-interactive removal.
+.TP
+.B list
+List installed packages, optionally filtering by manager (apt, flatpak, snap).
+.TP
+.B export
+Export all installed packages to a JSON file.
+.TP
+.B import <file_path>
+Import and install packages from a setup.json file.
+.TP
+.B hist
+Displays the installation and removal history.
+.TP
+.B uninstall
+Uninstalls the easyinstaller (ei) application itself from the system.
+
+.SH OPTIONS
+.TP
+.B --help
+Show help message and exit.
+
+.SH AUTHOR
+Luiz Gustavo <luizg.devlx@gmail.com>
