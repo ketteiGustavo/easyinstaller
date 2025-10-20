@@ -1,4 +1,4 @@
-name: Create Release and Build Binaries
+name: Create Release and Build Portable Binaries
 
 on:
   push:
@@ -9,57 +9,155 @@ permissions:
   contents: write
 
 jobs:
-  build-release:
+  build-glibc:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        # For now, we start with one distro. We can add more later.
-        # Distros: [debian, ubuntu, fedora, archlinux]
-        distro: [debian]
-
     steps:
-      - name: Check out code
+      - name: Check out
         uses: actions/checkout@v4
 
       - name: Get version from tag
         id: tag
         run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build binary for ${{ matrix.distro }}
+      - name: Build portable (glibc 2.31) on Debian bullseye
         run: |
+          UID_HOST=$(id -u)
+          GID_HOST=$(id -g)
+
           docker run --rm \
+            --user ${UID_HOST}:${GID_HOST} \
             -v "${GITHUB_WORKSPACE}":/app \
             -w /app \
-            python:3.13-bookworm \
-            /bin/bash -c "
-              set -e && \
-              apt-get update && apt-get install -y patchelf gcc ccache && \
-              pip install poetry && \
-              poetry install && \
-              poetry run python -m nuitka --onefile --standalone --output-dir=dist --output-filename=ei-${{ matrix.distro }}-amd64 --include-module=typer --include-module=rich --include-module=click --include-module=questionary src/easyinstaller/main.py && \
-              chmod -R a+r dist
+            python:3.13-bullseye \
+            /bin/bash -lc "
+              set -euo pipefail
+              umask 022
+              apt-get update && apt-get install -y --no-install-recommends patchelf gcc ccache ca-certificates && \
+              pip install --upgrade pip && \
+              pip install 'poetry>=1.8' 'nuitka==2.8.3' ordered-set zstandard && \
+              poetry install --no-interaction --no-root --only main && \
+              mkdir -p dist && \
+              poetry run python -m nuitka \
+                --onefile \
+                --standalone \
+                --assume-yes-for-downloads \
+                --jobs=$(nproc) \
+                --include-module=typer \
+                --include-module=rich \
+                --include-module=click \
+                --include-module=questionary \
+                --include-module=prompt_toolkit \
+                --output-dir=dist \
+                --output-filename=ei-linux-glibc2.31-amd64 \
+                src/easyinstaller/main.py && \
+              chmod -R a+rX dist
             "
 
-      - name: Upload binary as artifact
+      - name: Upload artifact (glibc)
         uses: actions/upload-artifact@v4
         with:
-          name: binaries
+          name: linux-glibc
           path: dist/*
 
-  create-release:
+  build-musl:
     runs-on: ubuntu-latest
-    needs: build-release
     steps:
-      - name: Download all binaries
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Build (musl) on Alpine
+        run: |
+          UID_HOST=$(id -u)
+          GID_HOST=$(id -g)
+
+          docker run --rm \
+            --user ${UID_HOST}:${GID_HOST} \
+            -v "${GITHUB_WORKSPACE}":/app \
+            -w /app \
+            python:3.13-alpine \
+            /bin/sh -lc '
+              set -eu
+              apk add --no-cache build-base patchelf bash ca-certificates
+              pip install --upgrade pip
+              pip install "poetry>=1.8" "nuitka==2.8.3" ordered-set zstandard
+              poetry install --no-interaction --no-root --only main
+              mkdir -p dist
+              poetry run python -m nuitka \
+                --onefile \
+                --standalone \
+                --static-libpython=yes \
+                --assume-yes-for-downloads \
+                --jobs=$(nproc) \
+                --include-module=typer \
+                --include-module=rich \
+                --include-module=click \
+                --include-module=questionary \
+                --include-module=prompt_toolkit \
+                --output-dir=dist \
+                --output-filename=ei-linux-musl-amd64 \
+                src/easyinstaller/main.py
+              chmod -R a+rX dist
+            '
+
+      - name: Upload artifact (musl)
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-musl
+          path: dist/*
+
+  test-glibc-matrix:
+    runs-on: ubuntu-latest
+    needs: build-glibc
+    strategy:
+      matrix:
+        image:
+          - ubuntu:22.04
+          - fedora:40
+          - archlinux:latest
+    steps:
+      - name: Download glibc artifact
         uses: actions/download-artifact@v4
         with:
-          name: binaries
+          name: linux-glibc
           path: dist
 
-      - name: Create Release and Upload Assets
+      - name: Smoke test on ${{ matrix.image }}
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -v "$PWD/dist":/dist \
+            -w /dist \
+            ${{ matrix.image }} \
+            /bin/sh -lc '
+              set -e
+              chmod +x ./ei-linux-glibc2.31-amd64
+              if command -v apt-get >/dev/null 2>&1; then
+                apt-get update && apt-get install -y --no-install-recommends libstdc++6 ca-certificates
+              elif command -v dnf >/dev/null 2>&1; then
+                dnf -y install libstdc++ ca-certificates || true
+              elif command -v pacman >/dev/null 2>&1; then
+                pacman -Sy --noconfirm gcc-libs ca-certificates || true
+              fi
+              ./ei-linux-glibc2.31-amd64 --help >/dev/null 2>&1 || ./ei-linux-glibc2.31-amd64 --version >/dev/null 2>&1
+            '
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [build-glibc, build-musl, test-glibc-matrix]
+    steps:
+      - name: Download glibc
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-glibc
+          path: dist
+
+      - name: Download musl
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-musl
+          path: dist
+
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           files: dist/*
