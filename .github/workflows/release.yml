@@ -4,7 +4,7 @@ on:
   workflow_dispatch: {}
   push:
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
 
 permissions:
   contents: write
@@ -26,8 +26,14 @@ jobs:
 
       - name: Build portable (glibc 2.31) on Debian bullseye
         run: |
+          # Volumes nomeados para APT (evita "Permission denied" em /var/lib/apt/lists)
+          docker volume create aptlists >/dev/null
+          docker volume create aptcache >/dev/null
+
           docker run --rm \
             -v "${GITHUB_WORKSPACE}":/app \
+            -v aptlists:/var/lib/apt/lists \
+            -v aptcache:/var/cache/apt \
             -w /app \
             python:3.13-bullseye \
             /bin/bash -lc '
@@ -50,8 +56,12 @@ jobs:
                 return 1
               }
 
-              apt_retry update || { echo "APT UPDATE falhou"; cat /var/log/apt/term.log 2>/dev/null || true; exit 100; }
-              apt_retry install -y --no-install-recommends patchelf gcc ccache ca-certificates || { echo "APT INSTALL falhou"; cat /var/log/apt/term.log 2>/dev/null || true; exit 100; }
+              # Garante dirs do APT caso o volume venha vazio
+              mkdir -p /var/lib/apt/lists/partial /var/cache/apt/archives/partial
+              chmod -R 755 /var/lib/apt/lists /var/cache/apt
+
+              apt_retry update || { echo "APT UPDATE falhou"; exit 100; }
+              apt_retry install -y --no-install-recommends patchelf gcc ccache ca-certificates
 
               python -V
               pip install --upgrade pip
@@ -75,7 +85,6 @@ jobs:
                 --output-filename=ei-linux-glibc2.31-amd64 \
                 src/easyinstaller/main.py
 
-              # Garantir leitura e travessia de diretórios para o runner
               chmod -R a+rX dist
             '
 
@@ -93,8 +102,14 @@ jobs:
 
       - name: Build (musl) on Alpine
         run: |
+          # Volumes nomeados para APK (evita "Unable to lock database: Permission denied")
+          docker volume create apklib >/dev/null
+          docker volume create apkcache >/dev/null
+
           docker run --rm \
             -v "${GITHUB_WORKSPACE}":/app \
+            -v apklib:/var/lib/apk \
+            -v apkcache:/etc/apk/cache \
             -w /app \
             python:3.13-alpine \
             /bin/sh -lc '
@@ -102,6 +117,10 @@ jobs:
               set -x
 
               echo "=== /etc/os-release ==="; cat /etc/os-release || true
+
+              # Garante dirs do APK caso o volume venha vazio
+              mkdir -p /var/lib/apk /etc/apk/cache
+              chmod -R 755 /var/lib/apk /etc/apk/cache
 
               apk_retry() {
                 for i in 1 2 3 4 5; do
