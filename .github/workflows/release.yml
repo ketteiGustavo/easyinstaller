@@ -1,12 +1,17 @@
 name: Create Release and Build Portable Binaries
 
 on:
+  workflow_dispatch: {}
   push:
     tags:
       - 'v*.*.*'
 
 permissions:
   contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build-glibc:
@@ -29,14 +34,37 @@ jobs:
             -v "${GITHUB_WORKSPACE}":/app \
             -w /app \
             python:3.13-bullseye \
-            /bin/bash -lc "
+            /bin/bash -lc '
               set -euo pipefail
+              set -x
               umask 022
-              apt-get update && apt-get install -y --no-install-recommends patchelf gcc ccache ca-certificates && \
-              pip install --upgrade pip && \
-              pip install 'poetry>=1.8' 'nuitka==2.8.3' ordered-set zstandard && \
-              poetry install --no-interaction --no-root --only main && \
-              mkdir -p dist && \
+              export DEBIAN_FRONTEND=noninteractive
+
+              echo "=== /etc/os-release ==="; cat /etc/os-release || true
+              echo "=== /etc/apt/sources.list ==="; cat /etc/apt/sources.list || true
+
+              apt_retry() {
+                for i in 1 2 3 4 5; do
+                  echo "APT attempt $i/5: $*"
+                  if apt-get -o Acquire::Retries=5 -o DPkg::Lock::Timeout=60 "$@"; then
+                    return 0
+                  fi
+                  sleep $((i*2))
+                done
+                return 1
+              }
+
+              apt_retry update || { echo "APT UPDATE falhou"; apt-get -V update || true; cat /var/log/apt/term.log 2>/dev/null || true; exit 100; }
+              apt_retry install -y --no-install-recommends patchelf gcc ccache ca-certificates || { echo "APT INSTALL falhou"; cat /var/log/apt/term.log 2>/dev/null || true; exit 100; }
+
+              python -V
+              pip install --upgrade pip
+              PIP_DEFAULT_TIMEOUT=60 pip install "poetry>=1.8" "nuitka==2.8.3" ordered-set zstandard
+
+              poetry --version
+              poetry install --no-interaction --no-root --only main
+
+              mkdir -p dist
               poetry run python -m nuitka \
                 --onefile \
                 --standalone \
@@ -49,9 +77,10 @@ jobs:
                 --include-module=prompt_toolkit \
                 --output-dir=dist \
                 --output-filename=ei-linux-glibc2.31-amd64 \
-                src/easyinstaller/main.py && \
+                src/easyinstaller/main.py
+
               chmod -R a+rX dist
-            "
+            '
 
       - name: Upload artifact (glibc)
         uses: actions/upload-artifact@v4
@@ -76,11 +105,32 @@ jobs:
             -w /app \
             python:3.13-alpine \
             /bin/sh -lc '
-              set -eu
-              apk add --no-cache build-base patchelf bash ca-certificates
+              set -euo pipefail
+              set -x
+
+              echo "=== /etc/os-release ==="; cat /etc/os-release || true
+
+              apk_retry() {
+                for i in 1 2 3 4 5; do
+                  echo "APK attempt $i/5: $*"
+                  if apk add --no-cache "$@"; then
+                    return 0
+                  fi
+                  sleep $((i*2))
+                done
+                return 1
+              }
+
+              apk update || true
+              apk_retry build-base patchelf bash ca-certificates
+
+              python -V
               pip install --upgrade pip
-              pip install "poetry>=1.8" "nuitka==2.8.3" ordered-set zstandard
+              PIP_DEFAULT_TIMEOUT=60 pip install "poetry>=1.8" "nuitka==2.8.3" ordered-set zstandard
+
+              poetry --version
               poetry install --no-interaction --no-root --only main
+
               mkdir -p dist
               poetry run python -m nuitka \
                 --onefile \
@@ -96,6 +146,7 @@ jobs:
                 --output-dir=dist \
                 --output-filename=ei-linux-musl-amd64 \
                 src/easyinstaller/main.py
+
               chmod -R a+rX dist
             '
 
@@ -131,13 +182,19 @@ jobs:
             /bin/sh -lc '
               set -e
               chmod +x ./ei-linux-glibc2.31-amd64
-              if command -v apt-get >/dev/null 2>&1; then
-                apt-get update && apt-get install -y --no-install-recommends libstdc++6 ca-certificates
-              elif command -v dnf >/dev/null 2>&1; then
-                dnf -y install libstdc++ ca-certificates || true
-              elif command -v pacman >/dev/null 2>&1; then
-                pacman -Sy --noconfirm gcc-libs ca-certificates || true
-              fi
+
+              # Instala runtime mínima para rodar --help/--version
+              try_install() {
+                if command -v apt-get >/dev/null 2>&1; then
+                  apt-get update && apt-get install -y --no-install-recommends libstdc++6 ca-certificates
+                elif command -v dnf >/dev/null 2>&1; then
+                  dnf -y install libstdc++ ca-certificates || true
+                elif command -v pacman >/dev/null 2>&1; then
+                  pacman -Sy --noconfirm gcc-libs ca-certificates || true
+                fi
+              }
+              try_install
+
               ./ei-linux-glibc2.31-amd64 --help >/dev/null 2>&1 || ./ei-linux-glibc2.31-amd64 --version >/dev/null 2>&1
             '
 
