@@ -14,10 +14,9 @@ def ask_user_to_select_packages(choices: list[dict]) -> list[dict] | None:
         console.print('[yellow]No packages found.[/yellow]')
         return None
 
-    # Format choices for questionary
     formatted_choices = [
         {
-            'name': f"{choice['name']} [{choice['source']}] - {choice['summary']}",
+            'name': f"{choice['name']} [{choice['source']}] - {choice.get('summary') or choice.get('version', '')}",
             'value': choice,
             'checked': False,
         }

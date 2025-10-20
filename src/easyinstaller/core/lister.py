@@ -37,7 +37,12 @@ def list_flatpak_packages():
     try:
         env = dict(os.environ, LC_ALL='C')
         result = subprocess.run(
-            ['flatpak', 'list', '--app', '--columns=name,version,size'],
+            [
+                'flatpak',
+                'list',
+                '--app',
+                '--columns=name,application,version,size',
+            ],
             capture_output=True,
             text=True,
             check=True,
@@ -47,12 +52,13 @@ def list_flatpak_packages():
         packages = []
         for line in lines:
             parts = line.split('\t')
-            if len(parts) >= 3:
+            if len(parts) >= 4:
                 packages.append(
                     {
                         'name': parts[0],
-                        'version': parts[1],
-                        'size': parts[2],
+                        'id': parts[1],
+                        'version': parts[2],
+                        'size': parts[3],
                         'source': 'flatpak',
                     }
                 )

@@ -87,6 +87,8 @@ def export_packages(
                     'version': pkg.get('version'),
                     'size': pkg.get('size'),
                 }
+                if source == 'flatpak':
+                    package_details['id'] = pkg.get('id')
                 export_data['packages'][source].append(package_details)
 
     try:
