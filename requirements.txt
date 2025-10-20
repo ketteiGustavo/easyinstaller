@@ -1,20 +1,35 @@
+black==22.1.0
+blue==0.9.1
 certifi==2025.10.5
 charset-normalizer==3.4.3
 click==8.3.0
-# Editable install with no version control (easyinstaller==0.1.0)
--e /home/luiz/workspaces/easyinstaller
+-e git+ssh://git@github.com/ketteiGustavo/easyinstaller.git@029213c279677b5283f9b8885e47a825a4134cae#egg=easyinstaller
+flake8==4.0.1
 idna==3.10
+isort==7.0.0
 loguru==0.7.3
 markdown-it-py==4.0.0
+mccabe==0.6.1
 mdurl==0.1.2
+mypy_extensions==1.1.0
+Nuitka==2.8.3
+ordered-set==4.1.0
+pathspec==0.12.1
+pexpect==4.9.0
+platformdirs==4.5.0
 prompt_toolkit==3.0.52
+ptyprocess==0.7.0
+pycodestyle==2.8.0
+pyflakes==2.4.0
 Pygments==2.19.2
 python-dotenv==1.1.1
 questionary==2.1.1
 requests==2.32.5
 rich==14.2.0
 shellingham==1.5.4
+tomli==2.3.0
 typer==0.19.2
 typing_extensions==4.15.0
 urllib3==2.5.0
 wcwidth==0.2.14
+zstandard==0.25.0
