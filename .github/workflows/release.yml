@@ -33,16 +33,16 @@ jobs:
           docker run --rm \
             -v "${GITHUB_WORKSPACE}":/app \
             -w /app \
+            -e HOST_UID=$(id -u) \
+            -e HOST_GID=$(id -g) \
             python:3.13-bookworm \
             /bin/bash -c "
               apt-get update && apt-get install -y patchelf gcc ccache && \
               pip install poetry && \
               poetry install && \
-              poetry run python -m nuitka --onefile --standalone --output-dir=dist --output-filename=ei-${{ matrix.distro }}-amd64 --include-module=typer --include-module=rich --include-module=click --include-module=questionary src/easyinstaller/main.py
+              poetry run python -m nuitka --onefile --standalone --output-dir=dist --output-filename=ei-${{ matrix.distro }}-amd64 --include-module=typer --include-module=rich --include-module=click --include-module=questionary src/easyinstaller/main.py && \
+              chown -R \$HOST_UID:\$HOST_GID dist
             "
-
-      - name: Fix Permissions
-        run: sudo chown -R $(id -u):$(id -g) ${{ github.workspace }}/dist
 
       - name: Upload binary as artifact
         uses: actions/upload-artifact@v4
