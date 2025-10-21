@@ -1,7 +1,7 @@
 import json
+import os
 
 from easyinstaller.core.config import config
-import os
 
 
 def get_history_file_path() -> str:
@@ -9,6 +9,7 @@ def get_history_file_path() -> str:
     history_dir = os.path.expanduser('~/.local/share/easy-installer')
     os.makedirs(history_dir, exist_ok=True)
     return os.path.join(history_dir, 'history.jsonl')
+
 
 def log_operation(operation_data: dict):
     """Appends a new operation record to the history file."""

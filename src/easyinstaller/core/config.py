@@ -12,6 +12,7 @@ DEFAULT_PATHS = {
     'export_dir': str(DATA_DIR / 'exports'),
     'history_file': str(DATA_DIR / 'history.jsonl'),
     'log_dir': str(DATA_DIR / 'logs'),
+    'language': 'en_US',
 }
 
 
