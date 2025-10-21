@@ -13,6 +13,13 @@ concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  # diretorios de cache no runner (host)
+  PIP_CACHE: ~/.cache/pip
+  POETRY_CACHE: ~/.cache/pypoetry
+  NUITKA_CACHE: ~/.cache/Nuitka
+  CCACHE_DIR_HOST: ~/.ccache
+
 jobs:
   build-glibc:
     runs-on: ubuntu-latest
@@ -24,6 +31,39 @@ jobs:
         id: tag
         run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
+      # ===== CACHES (HOST) =====
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PIP_CACHE }}
+          key: pip-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            pip-${{ runner.os }}-
+
+      - name: Cache Poetry
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.POETRY_CACHE }}
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            poetry-${{ runner.os }}-
+
+      - name: Cache Nuitka
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.NUITKA_CACHE }}
+          key: nuitka-${{ runner.os }}-${{ hashFiles('**/pyproject.toml','**/poetry.lock') }}
+          restore-keys: |
+            nuitka-${{ runner.os }}-
+
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR_HOST }}
+          key: ccache-${{ runner.os }}-${{ hashFiles('**/pyproject.toml','**/poetry.lock') }}
+          restore-keys: |
+            ccache-${{ runner.os }}-
+
       - name: Build portable (glibc 2.31) on Debian bullseye
         env:
           APP_VERSION: ${{ steps.tag.outputs.version }}
@@ -32,10 +72,17 @@ jobs:
           docker volume create aptlists >/dev/null
           docker volume create aptcache >/dev/null
 
+          # Garante que os caches existem no host
+          mkdir -p "${PIP_CACHE}" "${POETRY_CACHE}" "${NUITKA_CACHE}" "${CCACHE_DIR_HOST}"
+
           docker run --rm \
             -v "${GITHUB_WORKSPACE}":/app \
             -v aptlists:/var/lib/apt/lists \
             -v aptcache:/var/cache/apt \
+            -v "${PIP_CACHE}":/root/.cache/pip \
+            -v "${POETRY_CACHE}":/root/.cache/pypoetry \
+            -v "${NUITKA_CACHE}":/root/.cache/Nuitka \
+            -v "${CCACHE_DIR_HOST}":/root/.ccache \
             -w /app \
             -e APP_VERSION \
             python:3.13-bullseye \
@@ -45,26 +92,10 @@ jobs:
               umask 022
               export DEBIAN_FRONTEND=noninteractive
 
-              echo "=== /etc/os-release ==="; cat /etc/os-release || true
-              echo "=== /etc/apt/sources.list ==="; cat /etc/apt/sources.list || true
-
-              apt_retry() {
-                for i in 1 2 3 4 5; do
-                  echo "APT attempt $i/5: $*"
-                  if apt-get -o Acquire::Retries=5 -o DPkg::Lock::Timeout=60 "$@"; then
-                    return 0
-                  fi
-                  sleep $((i*2))
-                done
-                return 1
-              }
-
-              # Garante dirs do APT caso o volume venha vazio
+              # APT pronto
               mkdir -p /var/lib/apt/lists/partial /var/cache/apt/archives/partial
-              chmod -R 755 /var/lib/apt/lists /var/cache/apt
-
-              apt_retry update || { echo "APT UPDATE falhou"; exit 100; }
-              apt_retry install -y --no-install-recommends patchelf gcc ccache ca-certificates gettext
+              apt-get update
+              apt-get install -y --no-install-recommends patchelf gcc ccache ca-certificates gettext
 
               python -V
               pip install --upgrade pip
@@ -99,6 +130,9 @@ jobs:
                 --output-filename=ei-linux-glibc2.31-amd64 \
                 src/easyinstaller/main.py
 
+              echo "== ccache stats (glibc) =="
+              ccache -s || true
+
               chmod -R a+rX dist
             '
 
@@ -118,6 +152,36 @@ jobs:
         id: tag
         run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
+      # ===== CACHES (HOST) =====
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PIP_CACHE }}
+          key: pip-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            pip-${{ runner.os }}-
+      - name: Cache Poetry
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.POETRY_CACHE }}
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            poetry-${{ runner.os }}-
+      - name: Cache Nuitka
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.NUITKA_CACHE }}
+          key: nuitka-${{ runner.os }}-${{ hashFiles('**/pyproject.toml','**/poetry.lock') }}
+          restore-keys: |
+            nuitka-${{ runner.os }}-
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR_HOST }}
+          key: ccache-${{ runner.os }}-${{ hashFiles('**/pyproject.toml','**/poetry.lock') }}
+          restore-keys: |
+            ccache-${{ runner.os }}-
+
       - name: Build (musl) on Alpine
         env:
           APP_VERSION: ${{ steps.tag.outputs.version }}
@@ -126,36 +190,27 @@ jobs:
           docker volume create apklib >/dev/null
           docker volume create apkcache >/dev/null
 
+          mkdir -p "${PIP_CACHE}" "${POETRY_CACHE}" "${NUITKA_CACHE}" "${CCACHE_DIR_HOST}"
+
           docker run --rm \
             -v "${GITHUB_WORKSPACE}":/app \
             -v apklib:/var/lib/apk \
             -v apkcache:/etc/apk/cache \
+            -v "${PIP_CACHE}":/root/.cache/pip \
+            -v "${POETRY_CACHE}":/root/.cache/pypoetry \
+            -v "${NUITKA_CACHE}":/root/.cache/Nuitka \
+            -v "${CCACHE_DIR_HOST}":/root/.ccache \
             -w /app \
             -e APP_VERSION \
+            -e CCACHE_DIR=/root/.ccache \
             python:3.13-alpine \
             /bin/sh -lc '
               set -euo pipefail
-              set -x
+              umask 022
 
-              echo "=== /etc/os-release ==="; cat /etc/os-release || true
-
-              # Garante dirs do APK caso o volume venha vazio
               mkdir -p /var/lib/apk /etc/apk/cache
-              chmod -R 755 /var/lib/apk /etc/apk/cache
-
-              apk_retry() {
-                for i in 1 2 3 4 5; do
-                  echo "APK attempt $i/5: $*"
-                  if apk add --no-cache "$@"; then
-                    return 0
-                  fi
-                  sleep $((i*2))
-                done
-                return 1
-              }
-
               apk update || true
-              apk_retry build-base patchelf bash ca-certificates gettext
+              apk add --no-cache build-base patchelf bash ca-certificates gettext
 
               python -V
               pip install --upgrade pip
@@ -189,6 +244,9 @@ jobs:
                 --output-dir=dist \
                 --output-filename=ei-linux-musl-amd64 \
                 src/easyinstaller/main.py
+
+              echo "== ccache stats (musl) =="
+              ccache -s || true
 
               chmod -R a+rX dist
             '
@@ -256,6 +314,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-glibc, build-musl, test-glibc-matrix]
     steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
       - name: Download glibc
         uses: actions/download-artifact@v4
         with:
