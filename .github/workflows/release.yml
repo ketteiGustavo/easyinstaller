@@ -25,6 +25,8 @@ jobs:
         run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Build portable (glibc 2.31) on Debian bullseye
+        env:
+          APP_VERSION: ${{ steps.tag.outputs.version }}
         run: |
           # Volumes nomeados para APT (evita "Permission denied" em /var/lib/apt/lists)
           docker volume create aptlists >/dev/null
@@ -35,6 +37,7 @@ jobs:
             -v aptlists:/var/lib/apt/lists \
             -v aptcache:/var/cache/apt \
             -w /app \
+            -e APP_VERSION \
             python:3.13-bullseye \
             /bin/bash -lc '
               set -euo pipefail
@@ -61,14 +64,23 @@ jobs:
               chmod -R 755 /var/lib/apt/lists /var/cache/apt
 
               apt_retry update || { echo "APT UPDATE falhou"; exit 100; }
-              apt_retry install -y --no-install-recommends patchelf gcc ccache ca-certificates
+              apt_retry install -y --no-install-recommends patchelf gcc ccache ca-certificates gettext
 
               python -V
               pip install --upgrade pip
               PIP_DEFAULT_TIMEOUT=60 pip install "poetry>=1.8" "nuitka==2.8.3" ordered-set zstandard
 
               poetry --version
+              echo "$APP_VERSION" > src/easyinstaller/VERSION
               poetry install --no-interaction --no-root --only main
+
+              # Compile translations
+              echo "Compiling translations..."
+              mkdir -p src/easyinstaller/locales/pt_BR/LC_MESSAGES
+              msgfmt src/easyinstaller/locales/pt_BR/LC_MESSAGES/easyinstaller.po -o src/easyinstaller/locales/pt_BR/LC_MESSAGES/easyinstaller.mo
+              mkdir -p src/easyinstaller/locales/en_US/LC_MESSAGES
+              msgfmt src/easyinstaller/locales/en_US/LC_MESSAGES/easyinstaller.po -o src/easyinstaller/locales/en_US/LC_MESSAGES/easyinstaller.mo
+              echo "Translations compiled."
 
               mkdir -p dist
               poetry run python -m nuitka \
@@ -81,6 +93,8 @@ jobs:
                 --include-module=click \
                 --include-module=questionary \
                 --include-module=prompt_toolkit \
+                --include-data-file=src/easyinstaller/VERSION=easyinstaller/VERSION \
+                --include-data-dir=src/easyinstaller/locales=easyinstaller/locales \
                 --output-dir=dist \
                 --output-filename=ei-linux-glibc2.31-amd64 \
                 src/easyinstaller/main.py
@@ -100,7 +114,13 @@ jobs:
       - name: Check out
         uses: actions/checkout@v4
 
+      - name: Get version from tag
+        id: tag
+        run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
       - name: Build (musl) on Alpine
+        env:
+          APP_VERSION: ${{ steps.tag.outputs.version }}
         run: |
           # Volumes nomeados para APK (evita "Unable to lock database: Permission denied")
           docker volume create apklib >/dev/null
@@ -111,6 +131,7 @@ jobs:
             -v apklib:/var/lib/apk \
             -v apkcache:/etc/apk/cache \
             -w /app \
+            -e APP_VERSION \
             python:3.13-alpine \
             /bin/sh -lc '
               set -euo pipefail
@@ -134,14 +155,23 @@ jobs:
               }
 
               apk update || true
-              apk_retry build-base patchelf bash ca-certificates
+              apk_retry build-base patchelf bash ca-certificates gettext
 
               python -V
               pip install --upgrade pip
               PIP_DEFAULT_TIMEOUT=60 pip install "poetry>=1.8" "nuitka==2.8.3" ordered-set zstandard
 
               poetry --version
+              echo "$APP_VERSION" > src/easyinstaller/VERSION
               poetry install --no-interaction --no-root --only main
+
+              # Compile translations
+              echo "Compiling translations..."
+              mkdir -p src/easyinstaller/locales/pt_BR/LC_MESSAGES
+              msgfmt src/easyinstaller/locales/pt_BR/LC_MESSAGES/easyinstaller.po -o src/easyinstaller/locales/pt_BR/LC_MESSAGES/easyinstaller.mo
+              mkdir -p src/easyinstaller/locales/en_US/LC_MESSAGES
+              msgfmt src/easyinstaller/locales/en_US/LC_MESSAGES/easyinstaller.po -o src/easyinstaller/locales/en_US/LC_MESSAGES/easyinstaller.mo
+              echo "Translations compiled."
 
               mkdir -p dist
               poetry run python -m nuitka \
@@ -154,6 +184,8 @@ jobs:
                 --include-module=click \
                 --include-module=questionary \
                 --include-module=prompt_toolkit \
+                --include-data-file=src/easyinstaller/VERSION=easyinstaller/VERSION \
+                --include-data-dir=src/easyinstaller/locales=easyinstaller/locales \
                 --output-dir=dist \
                 --output-filename=ei-linux-musl-amd64 \
                 src/easyinstaller/main.py
@@ -235,6 +267,11 @@ jobs:
         with:
           name: linux-musl
           path: dist
+
+      - name: Copy LICENSE and CHANGELOG.md to dist
+        run: |
+          cp LICENSE dist/
+          cp CHANGELOG.md dist/
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
