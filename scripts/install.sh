@@ -83,6 +83,14 @@ main() {
         error "Failed to download the man page."
     fi
 
+    # Download license
+    local temp_license=$(mktemp)
+    local license_url="${base_download_url}/LICENSE"
+    info "Downloading license from $license_url..."
+    if ! curl -L --progress-bar "$license_url" -o "$temp_license"; then
+        error "Failed to download the license file."
+    fi
+
     # --- Installation ---
     info "Installing binary to $INSTALL_DIR/$BINARY_NAME..."
     install -m 755 "$temp_binary" "$INSTALL_DIR/$BINARY_NAME"
@@ -92,6 +100,10 @@ main() {
     mkdir -p "$DATA_DIR"
     install -m 755 "$temp_uninstall" "$DATA_DIR/uninstall.sh"
     rm "$temp_uninstall"
+
+    info "Installing license to $DATA_DIR/LICENSE..."
+    install -m 644 "$temp_license" "$DATA_DIR/LICENSE"
+    rm "$temp_license"
 
     info "Installing man page to $MAN_DIR/ei.1..."
     mkdir -p "$MAN_DIR"
