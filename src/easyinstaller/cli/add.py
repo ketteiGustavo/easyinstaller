@@ -9,7 +9,7 @@ console = Console()
 
 app = typer.Typer(
     name='add',
-    help='Find and install a package from any available source (apt, flatpak, snap).',
+    help='Searches for and installs packages from apt, flatpak, and snap.',
     no_args_is_help=True,
 )
 

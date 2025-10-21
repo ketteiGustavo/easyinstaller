@@ -9,7 +9,7 @@ console = Console()
 
 app = typer.Typer(
     name='rm',
-    help='Remove an installed package.',
+    help='Finds and removes an installed package by its exact name.',
     no_args_is_help=True,
 )
 
@@ -17,13 +17,19 @@ app = typer.Typer(
 @app.callback(invoke_without_command=True)
 def rm(
     packages_and_flags: list[str] = typer.Argument(
-        ...,
-        help='One or more installed packages to remove. Flags like -y are also accepted.',
+        ..., help='One or more installed packages to remove.'
     ),
     purge: bool = typer.Option(
         False,
         '--purge',
-        help='Use "purge" instead of "remove" for apt (removes configuration files).',
+        help="Use 'purge' instead of 'remove' for apt (removes configuration files).",
+    ),
+    yes: bool = typer.Option(
+        False,
+        '--yes',
+        '-y',
+        help='Automatically answer "yes" to confirmation prompts.',
+        is_flag=True,  # Keep for documentation purposes
     ),
 ):
     """
@@ -31,10 +37,10 @@ def rm(
     """
     # --- Manual parsing to handle typer's greedy list argument ---
     packages_to_remove = []
-    yes = False
+    auto_confirm = yes  # Start with the value from typer's parsing
     for item in packages_and_flags:
         if item in ('-y', '--yes'):
-            yes = True
+            auto_confirm = True
         else:
             packages_to_remove.append(item)
     # --- End of manual parsing ---
@@ -67,13 +73,13 @@ def rm(
 
         if len(exact_matches) == 1:
             package = exact_matches[0]
-            if yes or typer.confirm(
+            if auto_confirm or typer.confirm(
                 f"Found installed package: {package['name']} [{package['source']}]\nRemove it?"
             ):
                 packages_to_process.append(package)
 
         elif len(exact_matches) > 1:
-            if yes:
+            if auto_confirm:
                 console.print(
                     f"[red]Error:[/red] Multiple packages named '[yellow]{package_query}[/yellow]' found. "
                     f"Cannot use '-y' in an ambiguous situation. Please run without '-y' and select manually."
@@ -81,14 +87,14 @@ def rm(
                 continue
 
             console.print(
-                f"Found multiple packages with the name [yellow]'{package_query}'[/yellow]. Please choose which to remove."
+                f"Found multiple packages with the name [yellow]'{package_query}'[/yellow]'. Please choose which to remove."
             )
             selected = ask_user_to_select_packages(exact_matches)
             if selected:
                 packages_to_process.extend(selected)
         else:
             console.print(
-                f"[red]Error:[/red] Unable to locate an installed package named [yellow]'{package_query}'[/yellow]."
+                f"[red]Error:[/red] Unable to locate an installed package named [yellow]'{package_query}'[/yellow].."
             )
             continue
 

@@ -5,13 +5,18 @@ from rich import print
 
 from easyinstaller.core.package_handler import install_with_manager
 
-app = typer.Typer()
+app = typer.Typer(
+    name='import',
+    help='Installs packages from a previously exported JSON file.',
+    no_args_is_help=True,
+)
 
 
 @app.callback(invoke_without_command=True)
 def import_packages(
     file_path: str = typer.Argument(
-        ..., help='Path to the setup.json file to import packages from.'
+        ...,
+        help='Path to the JSON file containing the list of packages to install.',
     )
 ):
     """

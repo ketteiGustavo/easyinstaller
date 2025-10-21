@@ -6,9 +6,13 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from easyinstaller.core.history_handler import get_history_file_path
+from easyinstaller.core.config import config
 
-app = typer.Typer()
+app = typer.Typer(
+    name='hist',
+    help='Displays the history of packages installed and removed by easyinstaller.',
+    no_args_is_help=True,
+)
 console = Console()
 
 
@@ -17,7 +21,7 @@ def show_history():
     """
     Displays the installation and removal history.
     """
-    history_file = get_history_file_path()
+    history_file = config['history_file']
 
     if not os.path.exists(history_file) or os.path.getsize(history_file) == 0:
         console.print('[yellow]No history found.[/yellow]')

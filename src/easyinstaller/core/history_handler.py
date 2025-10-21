@@ -1,5 +1,6 @@
-import datetime
 import json
+
+from easyinstaller.core.config import config
 import os
 
 
@@ -9,10 +10,9 @@ def get_history_file_path() -> str:
     os.makedirs(history_dir, exist_ok=True)
     return os.path.join(history_dir, 'history.jsonl')
 
-
 def log_operation(operation_data: dict):
     """Appends a new operation record to the history file."""
-    history_file = get_history_file_path()
+    history_file = config['history_file']
     try:
         with open(history_file, 'a') as f:
             f.write(json.dumps(operation_data) + '\n')

@@ -8,7 +8,7 @@ console = Console()
 
 app = typer.Typer(
     name='list',
-    help='List installed packages, optionally filtering by manager (apt, flatpak, snap).',
+    help='Lists all installed packages, with an option to filter by manager.',
 )
 
 

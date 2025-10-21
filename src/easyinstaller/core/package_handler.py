@@ -5,6 +5,7 @@ from datetime import datetime
 
 from rich.console import Console
 
+from easyinstaller.core.config import config
 from easyinstaller.core.distro_detector import get_native_manager_type
 from easyinstaller.core.history_handler import log_operation
 from easyinstaller.core.lister import (
@@ -83,7 +84,7 @@ def remove_with_manager(package_name: str, manager: str, purge: bool = False):
         raise SystemExit(1)
 
     cmd = _build_cmd(manager, 'remove', package_name, purge=purge)
-    log_path = os.path.expanduser('~/.ei/logs/ei.log')
+    log_path = os.path.join(config['log_dir'], 'ei.log')
 
     before_set = lister_func()
     code = run_cmd_smart(cmd, log_path=log_path)
@@ -138,7 +139,7 @@ def install_with_manager(package_name: str, manager: str):
         )
 
     cmd = _build_cmd(manager, 'install', package_name)
-    log_path = os.path.expanduser('~/.ei/logs/ei.log')
+    log_path = os.path.join(config['log_dir'], 'ei.log')
 
     before_set = lister_func()
     code = run_cmd_smart(cmd, log_path=log_path)

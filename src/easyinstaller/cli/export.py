@@ -6,6 +6,7 @@ import platform
 import typer
 from rich.console import Console
 
+from easyinstaller.core.config import config
 from easyinstaller.core.distro_detector import get_native_manager_type
 from easyinstaller.core.lister import unified_lister
 
@@ -13,7 +14,7 @@ console = Console()
 
 app = typer.Typer(
     name='export',
-    help='Export all installed packages to a JSON file.',
+    help='Exports a list of all installed packages to a JSON file.',
 )
 
 
@@ -38,16 +39,22 @@ def export_packages(
         help='Optional: Specify one or more managers to export (e.g., apt, snap).',
     ),
     output_file: str = typer.Option(
-        'myapp/setup.json',
+        None,
         '--output',
         '-o',
-        help='The path to save the JSON file.',
+        help='Path to save the JSON file. Defaults to a timestamped file in ~/.local/share/easyinstaller/exports/.',
     ),
 ):
     """
     Gathers installed packages and system information and exports to a JSON file.
     Can be filtered by one or more package managers.
     """
+    # If no output file is specified, create a default one
+    if output_file is None:
+        today_str = datetime.date.today().isoformat()
+        export_dir = config.get('export_dir', '.')
+        output_file = os.path.join(export_dir, f'setup-{today_str}.json')
+
     console.print(f'[bold green]Starting export...[/bold green]')
 
     status_text = '[cyan]Gathering system and package information...[/cyan]'

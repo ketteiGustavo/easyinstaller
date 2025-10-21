@@ -4,7 +4,11 @@ import subprocess
 import typer
 from rich.console import Console
 
-app = typer.Typer()
+app = typer.Typer(
+    name='uninstall',
+    help='Uninstalls the easyinstaller (ei) application from the system.',
+    no_args_is_help=True,
+)
 console = Console()
 
 UNINSTALL_SCRIPT_PATH = '/usr/local/share/easyinstaller/uninstall.sh'

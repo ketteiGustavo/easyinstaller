@@ -13,8 +13,10 @@ from easyinstaller.cli import uninstall as uninstall_app
 
 app = typer.Typer(
     name='ei',
-    help='A universal installation manager for Linux.',
+    help='[bold green]EasyInstaller[/bold green]: A universal package manager for Linux, simplifying apt, flatpak, and snap.',
     add_completion=False,
+    rich_markup_mode='rich',
+    no_args_is_help=True,
 )
 
 app.add_typer(add_app.app, name='add')
