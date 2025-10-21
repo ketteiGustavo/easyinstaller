@@ -53,60 +53,56 @@ main() {
     distro=$(get_distro)
     info "Detected distribution: $distro"
 
-    # TODO: Replace this with actual release version detection
-    local latest_version="v0.1.0"
+    # --- Download Assets ---
+    info "Downloading assets from release $latest_version..."
 
-    # Placeholder for binary name based on distro. 
-    # This will be defined in the GitHub release workflow.
-    local compiled_binary_name="${BINARY_NAME}-${distro}-amd64"
-    local download_url="https://github.com/${GITHUB_REPO}/releases/download/${latest_version}/${compiled_binary_name}"
+    # Base URL for all assets
+    local base_download_url="https://github.com/${GITHUB_REPO}/releases/download/${latest_version}"
 
-    info "Downloading from $download_url..."
-    local temp_binary
-    temp_binary=$(mktemp)
-
-    if ! curl -L --progress-bar "$download_url" -o "$temp_binary"; then
+    # Download binary
+    local temp_binary=$(mktemp)
+    local binary_url="${base_download_url}/ei-linux-glibc2.31-amd64" # Using glibc version as default
+    info "Downloading binary from $binary_url..."
+    if ! curl -L --progress-bar "$binary_url" -o "$temp_binary"; then
         error "Failed to download the binary. Please check the URL and your connection."
     fi
 
+    # Download uninstall script
+    local temp_uninstall=$(mktemp)
+    local uninstall_url="${base_download_url}/uninstall.sh"
+    info "Downloading uninstall script from $uninstall_url..."
+    if ! curl -L --progress-bar "$uninstall_url" -o "$temp_uninstall"; then
+        error "Failed to download the uninstall script."
+    fi
+
+    # Download man page
+    local temp_manpage=$(mktemp)
+    local manpage_url="${base_download_url}/ei.1"
+    info "Downloading man page from $manpage_url..."
+    if ! curl -L --progress-bar "$manpage_url" -o "$temp_manpage"; then
+        error "Failed to download the man page."
+    fi
+
+    # --- Installation ---
     info "Installing binary to $INSTALL_DIR/$BINARY_NAME..."
     install -m 755 "$temp_binary" "$INSTALL_DIR/$BINARY_NAME"
     rm "$temp_binary"
 
-    # --- Create Uninstall Script ---
-    info "Creating uninstall script at $DATA_DIR/uninstall.sh..."
+    info "Installing uninstall script to $DATA_DIR/uninstall.sh..."
     mkdir -p "$DATA_DIR"
+    install -m 755 "$temp_uninstall" "$DATA_DIR/uninstall.sh"
+    rm "$temp_uninstall"
 
-    # Use a heredoc to write the uninstall script
-    cat <<EOF > "$DATA_DIR/uninstall.sh"
-#!/bin/bash
+    info "Installing man page to $MAN_DIR/ei.1..."
+    mkdir -p "$MAN_DIR"
+    install -m 644 "$temp_manpage" "$MAN_DIR/ei.1"
+    gzip -f "$MAN_DIR/ei.1"
+    rm "$temp_manpage"
 
-echo "Uninstalling $PROJECT_NAME..."
-
-# Stop on error
-set -e
-
-if [ "\$(id -u)" -ne 0 ]; then
-    echo "Uninstall script requires superuser privileges. Please run with sudo."
-    exit 1
-fi
-
-echo "Removing binary..."
-rm -f "$INSTALL_DIR/$BINARY_NAME"
-
-# TODO: Uncomment when man page is ready
-# echo "Removing man page..."
-# rm -f "$MAN_DIR/ei.1.gz"
-# mandb
-
-echo "Removing data directory..."
-rm -rf "$DATA_DIR"
-
-echo "$PROJECT_NAME has been successfully uninstalled."
-
-EOF
-
-    chmod +x "$DATA_DIR/uninstall.sh"
+    info "Updating man-db..."
+    if command -v mandb &> /dev/null; then
+        mandb
+    fi
 
     info "\033[1;32m✔ Installation successful!\033[0m"
     info "Run '$BINARY_NAME --help' to get started."
