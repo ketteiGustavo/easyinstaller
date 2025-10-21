@@ -7,10 +7,9 @@ def test_run_cmd_smart_fallbacks_to_subprocess_with_env_merge():
     subprocess_result = MagicMock(returncode=3)
 
     with patch('easyinstaller.core.runner.HAS_PEXPECT', False), patch(
-        'easyinstaller.core.runner.subprocess.run', return_value=subprocess_result
-    ) as run_mock, patch.object(
-        runner.console, 'status'
-    ) as status_mock:
+        'easyinstaller.core.runner.subprocess.run',
+        return_value=subprocess_result,
+    ) as run_mock, patch.object(runner.console, 'status') as status_mock:
         status_mock.return_value.__enter__.return_value = None
         status_mock.return_value.__exit__.return_value = None
 

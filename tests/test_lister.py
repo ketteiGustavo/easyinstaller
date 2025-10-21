@@ -4,7 +4,7 @@ import easyinstaller.core.lister as lister
 
 
 def test_list_apt_packages_parses_expected_fields():
-    stdout = "pkg1\t1.0\t1024\npkg2\t2.0\t2048\n"
+    stdout = 'pkg1\t1.0\t1024\npkg2\t2.0\t2048\n'
     completed = MagicMock(stdout=stdout)
     with patch(
         'easyinstaller.core.lister.subprocess.run', return_value=completed
@@ -38,8 +38,8 @@ def test_list_apt_packages_returns_empty_on_error():
 
 def test_list_flatpak_packages_parses_tab_columns():
     stdout = (
-        "App One\torg.example.One\t1.2.3\t200 MB\n"
-        "App Two\torg.example.Two\tlatest\t150 MB\n"
+        'App One\torg.example.One\t1.2.3\t200 MB\n'
+        'App Two\torg.example.Two\tlatest\t150 MB\n'
     )
     completed = MagicMock(stdout=stdout)
     with patch(
@@ -54,9 +54,9 @@ def test_list_flatpak_packages_parses_tab_columns():
 
 def test_list_snap_packages_skips_header_and_extracts_fields():
     stdout = (
-        "Name Version Rev Tracking Publisher Notes\n"
-        "snap1 1.0 1 latest dev classic\n"
-        "snap2 2.0 2 latest dev -\n"
+        'Name Version Rev Tracking Publisher Notes\n'
+        'snap1 1.0 1 latest dev classic\n'
+        'snap2 2.0 2 latest dev -\n'
     )
     completed = MagicMock(stdout=stdout)
     with patch(

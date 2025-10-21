@@ -90,13 +90,11 @@ def test_install_with_manager_failure_raises_system_exit(tmp_path):
             with patch(
                 'easyinstaller.core.package_handler.run_cmd_smart',
                 return_value=2,
-            ), patch.object(
-                ph.console, 'print'
-            ) as console_mock, patch(
+            ), patch.object(ph.console, 'print') as console_mock, patch(
                 'easyinstaller.core.package_handler.log_operation', log_mock
             ):
-                    with pytest.raises(SystemExit) as exc:
-                        ph.install_with_manager(package_name, 'snap')
+                with pytest.raises(SystemExit) as exc:
+                    ph.install_with_manager(package_name, 'snap')
 
     assert exc.value.code == 2
     console_mock.assert_called()
