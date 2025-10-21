@@ -2,14 +2,17 @@ import typer
 
 from easyinstaller.cli import add as add_app
 from easyinstaller.cli import apt as apt_app
+from easyinstaller.cli import completion as completion_app
 from easyinstaller.cli import export as export_app
 from easyinstaller.cli import flatpak as flatpak_app
 from easyinstaller.cli import hist as hist_app
 from easyinstaller.cli import import_app
+from easyinstaller.cli import license as license_app
 from easyinstaller.cli import list as list_app
 from easyinstaller.cli import remove as rm_app
 from easyinstaller.cli import snap as snap_app
 from easyinstaller.cli import uninstall as uninstall_app
+from easyinstaller.cli import update as update_app
 
 app = typer.Typer(
     name='ei',
@@ -31,6 +34,9 @@ app.add_typer(flatpak_app.app, name='fp')
 app.add_typer(flatpak_app.app, name='flatpak')
 app.add_typer(snap_app.app, name='snap')
 app.add_typer(snap_app.app, name='sp')
+app.add_typer(license_app.app, name='license')
+app.add_typer(completion_app.app, name='completion')
+app.add_typer(update_app.app, name='update')
 
 
 @app.callback()
