@@ -9,12 +9,13 @@ from rich.console import Console
 from easyinstaller.core.config import config
 from easyinstaller.core.distro_detector import get_native_manager_type
 from easyinstaller.core.lister import unified_lister
+from easyinstaller.i18n.i18n import _
 
 console = Console()
 
 app = typer.Typer(
     name='export',
-    help='Exports a list of all installed packages to a JSON file.',
+    help=_('Exports a list of all installed packages to a JSON file.'),
 )
 
 
@@ -36,13 +37,17 @@ def get_os_release():
 def export_packages(
     managers: list[str] = typer.Argument(
         None,
-        help='Optional: Specify one or more managers to export (e.g., apt, snap).',
+        help=_(
+            'Optional: Specify one or more managers to export (e.g., apt, snap).'
+        ),
     ),
     output_file: str = typer.Option(
         None,
         '--output',
         '-o',
-        help='Path to save the JSON file. Defaults to a timestamped file in ~/.local/share/easyinstaller/exports/.',
+        help=_(
+            'Path to save the JSON file. Defaults to a timestamped file in ~/.local/share/easyinstaller/exports/.'
+        ),
     ),
 ):
     """
@@ -55,19 +60,21 @@ def export_packages(
         export_dir = config.get('export_dir', '.')
         output_file = os.path.join(export_dir, f'setup-{today_str}.json')
 
-    console.print(f'[bold green]Starting export...[/bold green]')
+    console.print(_('[bold green]Starting export...[/bold green]'))
 
-    status_text = '[cyan]Gathering system and package information...[/cyan]'
+    status_text = _('[cyan]Gathering system and package information...[/cyan]')
     if managers:
-        status_text = f"[cyan]Gathering info for { ', '.join(managers) } packages...[/cyan]"
+        status_text = _(
+            '[cyan]Gathering info for {managers_list} packages...[/cyan]'
+        ).format(managers_list=', '.join(managers))
 
     with console.status(status_text):
         packages = unified_lister(managers)
 
         os_release = get_os_release()
         system_info = {
-            'distro': os_release.get('NAME', 'Unknown'),
-            'version': os_release.get('VERSION_ID', 'Unknown'),
+            'distro': os_release.get('NAME', _('Unknown')),
+            'version': os.get('VERSION_ID', _('Unknown')),
             'user': os.getlogin(),
             'architecture': platform.machine(),
             'native_manager': get_native_manager_type(),
@@ -106,10 +113,14 @@ def export_packages(
         with open(output_file, 'w') as f:
             json.dump(export_data, f, indent=2)
 
-        console.print(f'[bold green]✔ Export successful![/bold green]')
+        console.print(_('[bold green]✔ Export successful![/bold green]'))
         console.print(
-            f'[white]Setup file saved to:[/] [cyan]{os.path.abspath(output_file)}[/cyan]'
+            _(
+                '[white]Setup file saved to:[/] [cyan]{output_file_path}[/cyan]'
+            ).format(output_file_path=os.path.abspath(output_file))
         )
 
     except Exception as e:
-        console.print(f'[bold red]Error writing to file:[/bold red] {e}')
+        console.print(
+            _('[bold red]Error writing to file:[/bold red] {error}')
+        ).format(error=e)

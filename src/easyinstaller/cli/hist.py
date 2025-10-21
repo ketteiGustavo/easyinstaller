@@ -7,10 +7,13 @@ from rich.console import Console
 from rich.table import Table
 
 from easyinstaller.core.config import config
+from easyinstaller.i18n.i18n import _
 
 app = typer.Typer(
     name='hist',
-    help='Displays the history of packages installed and removed by easyinstaller.',
+    help=_(
+        'Displays the history of packages installed and removed by easyinstaller.'
+    ),
     no_args_is_help=True,
 )
 console = Console()
@@ -24,21 +27,21 @@ def show_history():
     history_file = config['history_file']
 
     if not os.path.exists(history_file) or os.path.getsize(history_file) == 0:
-        console.print('[yellow]No history found.[/yellow]')
+        console.print(_('[yellow]No history found.[/yellow]'))
         return
 
     table = Table(
-        title='EasyInstaller History',
+        title=_('EasyInstaller History'),
         show_header=True,
         header_style='bold magenta',
         expand=True,
     )
-    table.add_column('Date', style='dim', width=12)
-    table.add_column('Time', style='dim', width=10)
-    table.add_column('Action', width=10)
-    table.add_column('Package')
-    table.add_column('Manager', style='cyan')
-    table.add_column('Details', justify='right')
+    table.add_column(_('Date'), style='dim', width=12)
+    table.add_column(_('Time'), style='dim', width=10)
+    table.add_column(_('Action'), width=10)
+    table.add_column(_('Package'))
+    table.add_column(_('Manager'), style='cyan')
+    table.add_column(_('Details'), justify='right')
 
     try:
         with open(history_file, 'r') as f:
@@ -50,9 +53,9 @@ def show_history():
         )
 
         for entry in history_entries:
-            action = entry.get('action', 'N/A')
-            package = entry.get('package', 'N/A')
-            manager = entry.get('manager', 'N/A')
+            action = entry.get('action', _('N/A'))
+            package = entry.get('package', _('N/A'))
+            manager = entry.get('manager', _('N/A'))
             timestamp_str = entry.get('timestamp')
 
             if timestamp_str:
@@ -60,7 +63,7 @@ def show_history():
                 date_str = dt_object.strftime('%Y-%m-%d')
                 time_str = dt_object.strftime('%H:%M:%S')
             else:
-                date_str, time_str = 'N/A', 'N/A'
+                date_str, time_str = _('N/A'), _('N/A')
 
             action_style = 'green' if action == 'install' else 'red'
 
@@ -68,11 +71,13 @@ def show_history():
             if action == 'install' and 'installed_packages' in entry:
                 count = len(entry['installed_packages']) - 1
                 if count > 0:
-                    details = f"{count} dependenc{'ies' if count > 1 else 'y'}"
+                    details = _(
+                        "{count} dependenc{'ies' if count > 1 else 'y'}"
+                    ).format(count=count)
             elif action == 'remove' and 'removed_packages' in entry:
                 count = len(entry['removed_packages']) - 1
                 if count > 0:
-                    details = f'{count} packages removed'
+                    details = _('{count} packages removed').format(count=count)
 
             table.add_row(
                 date_str,
@@ -86,7 +91,11 @@ def show_history():
         console.print(table)
 
     except (IOError, json.JSONDecodeError) as e:
-        console.print(f'[bold red]Error reading history file:[/bold red] {e}')
+        console.print(
+            _(
+                '[bold red]Error reading history file:[/bold red] {error}'
+            ).format(error=e)
+        )
 
 
 if __name__ == '__main__':

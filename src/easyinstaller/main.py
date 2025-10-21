@@ -13,6 +13,10 @@ from easyinstaller.cli import remove as rm_app
 from easyinstaller.cli import snap as snap_app
 from easyinstaller.cli import uninstall as uninstall_app
 from easyinstaller.cli import update as update_app
+from easyinstaller.core.config import config
+from easyinstaller.i18n.i18n import setup_i18n
+
+setup_i18n(config['language'])
 
 app = typer.Typer(
     name='ei',

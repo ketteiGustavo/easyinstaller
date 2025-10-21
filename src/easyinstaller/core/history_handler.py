@@ -2,6 +2,7 @@ import json
 import os
 
 from easyinstaller.core.config import config
+from easyinstaller.i18n.i18n import _
 
 
 def get_history_file_path() -> str:
@@ -19,4 +20,4 @@ def log_operation(operation_data: dict):
             f.write(json.dumps(operation_data) + '\n')
     except IOError as e:
         # In a real CLI, you might want to handle this more gracefully
-        print(f'Error writing to history file: {e}')
+        print(_('Error writing to history file: {error}').format(error=e))

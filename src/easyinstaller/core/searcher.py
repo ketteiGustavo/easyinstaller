@@ -3,6 +3,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 import requests
 
+from easyinstaller.i18n.i18n import _
+
 
 def unified_search(query: str) -> list[dict]:
     """Performs a search across apt, flathub, and snapcraft in parallel and sorts by relevance."""
@@ -19,7 +21,7 @@ def unified_search(query: str) -> list[dict]:
                 all_results.extend(future.result())
             except Exception as e:
                 # In a real app, you'd log this error
-                print(f'Error during search: {e}')
+                print(_('Error during search: {error}').format(error=e))
 
     # Sort results by relevance
     def sort_key(result):

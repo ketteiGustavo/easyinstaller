@@ -54,5 +54,21 @@ def create_default_config() -> dict:
         return DEFAULT_PATHS
 
 
+def set_config_value(key: str, value: str):
+    """
+    Updates a specific configuration key with a new value and saves it.
+    """
+    current_config = get_config()
+    current_config[key] = value
+    try:
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump(current_config, f, indent=2)
+        # Reload the global config object
+        global config
+        config = current_config
+    except IOError as e:
+        print(f'Error saving configuration: {e}')
+
+
 # Load config once at import time
 config = get_config()

@@ -4,12 +4,13 @@ from rich.console import Console
 from easyinstaller.cli.utils.ask import ask_user_to_select_packages
 from easyinstaller.core.package_handler import install_with_manager
 from easyinstaller.core.searcher import unified_search
+from easyinstaller.i18n.i18n import _
 
 console = Console()
 
 app = typer.Typer(
     name='add',
-    help='Searches for and installs packages from apt, flatpak, and snap.',
+    help=_('Searches for and installs packages from apt, flatpak, and snap.'),
     no_args_is_help=True,
 )
 
@@ -17,7 +18,7 @@ app = typer.Typer(
 @app.callback(invoke_without_command=True)
 def add(
     packages: list[str] = typer.Argument(
-        ..., help='One or more packages to search for and install.'
+        ..., help=_('One or more packages to search for and install.')
     )
 ):
     """
@@ -25,13 +26,17 @@ def add(
     """
     for package_query in packages:
         console.print(
-            f"---\n[bold]Searching for [yellow]'{package_query}'[/yellow]...[/bold]"
+            _(
+                "---\n[bold]Searching for [yellow]'{package_query}'[/yellow]...[/bold]"
+            ).format(package_query=package_query)
         )
         results = unified_search(package_query)
 
         if not results:
             console.print(
-                f"No results found for [yellow]'{package_query}'[/yellow]."
+                _(
+                    "No results found for [yellow]'{package_query}'[/yellow]."
+                ).format(package_query=package_query)
             )
             continue
 
@@ -43,7 +48,9 @@ def add(
         ):
             package = results[0]
             console.print(
-                f"Found one exact match: [green]{package['name']}[/green] ([cyan]{package['source']}[/cyan]). Installing automatically."
+                _(
+                    'Found one exact match: [green]{name}[/green] ([cyan]{source}[/cyan]). Installing automatically.'
+                ).format(name=package['name'], source=package['source'])
             )
             selected_packages = [package]
         else:
@@ -53,7 +60,9 @@ def add(
         if selected_packages:
             for package in selected_packages:
                 console.print(
-                    f"Installing [green]{package['name']}[/green] from [cyan]{package['source']}[/cyan]..."
+                    _(
+                        'Installing [green]{name}[/green] from [cyan]{source}[/cyan]...'
+                    ).format(name=package['name'], source=package['source'])
                 )
                 try:
                     install_with_manager(
@@ -61,5 +70,7 @@ def add(
                     )
                 except Exception as e:
                     console.print(
-                        f"[red]An error occurred while installing {package['name']}:[/red] {e}"
+                        _(
+                            '[red]An error occurred while installing {name}:[/red] {error}'
+                        ).format(name=package['name'], error=e)
                     )

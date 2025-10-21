@@ -18,6 +18,8 @@ except ImportError:
 
 from rich.console import Console
 
+from easyinstaller.i18n.i18n import _
+
 console = Console()
 
 PROMPTS = re.compile(
@@ -29,7 +31,7 @@ PROMPTS = re.compile(
 )
 
 
-def _spinner(stop_event, label='Installing...'):
+def _spinner(stop_event, label=_('Installing...')):
     frames = '|/-\\'
     i = 0
     while not stop_event.is_set():
@@ -53,7 +55,9 @@ def run_cmd_smart(
 
     if not HAS_PEXPECT:
         # Fallback without prompt detection
-        with console.status(f'[bold cyan]Running (no pexpect):[/] {cmd}'):
+        with console.status(
+            _('[bold cyan]Running (no pexpect):[/] {cmd}').format(cmd=cmd)
+        ):
             proc = subprocess.run(shlex.split(cmd), env=merged_env)
             return proc.returncode
 
@@ -66,7 +70,11 @@ def run_cmd_smart(
     )
     stop = threading.Event()
     spin = threading.Thread(
-        target=_spinner, args=(stop, f'Running: {cmd.split()[0]}...')
+        target=_spinner,
+        args=(
+            stop,
+            _('Running: {cmd_name}...').format(cmd_name=cmd.split()[0]),
+        ),
     )
     spin.start()
 

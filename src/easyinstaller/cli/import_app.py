@@ -4,10 +4,11 @@ import typer
 from rich import print
 
 from easyinstaller.core.package_handler import install_with_manager
+from easyinstaller.i18n.i18n import _
 
 app = typer.Typer(
     name='import',
-    help='Installs packages from a previously exported JSON file.',
+    help=_('Installs packages from a previously exported JSON file.'),
     no_args_is_help=True,
 )
 
@@ -16,31 +17,41 @@ app = typer.Typer(
 def import_packages(
     file_path: str = typer.Argument(
         ...,
-        help='Path to the JSON file containing the list of packages to install.',
+        help=_(
+            'Path to the JSON file containing the list of packages to install.'
+        ),
     )
 ):
     """
     Import and install packages from a setup.json file.
     """
-    print(f'Starting import from: [bold cyan]{file_path}[/bold cyan]')
+    print(
+        _('Starting import from: [bold cyan]{file_path}[/bold cyan]').format(
+            file_path=file_path
+        )
+    )
 
     try:
         with open(file_path, 'r') as f:
             data = json.load(f)
     except FileNotFoundError:
         print(
-            f'[bold red]Error:[/bold red] File not found at [cyan]{file_path}[/cyan]'
+            _(
+                '[bold red]Error:[/bold red] File not found at [cyan]{file_path}[/cyan]'
+            ).format(file_path=file_path)
         )
         raise typer.Exit(code=1)
     except json.JSONDecodeError:
         print(
-            f'[bold red]Error:[/bold red] Could not decode JSON from [cyan]{file_path}[/cyan]'
+            _(
+                '[bold red]Error:[/bold red] Could not decode JSON from [cyan]{file_path}[/cyan]'
+            ).format(file_path=file_path)
         )
         raise typer.Exit(code=1)
 
     packages_to_install = data.get('packages', {})
     if not packages_to_install:
-        print('[yellow]No packages found in the file to install.[/yellow]')
+        print(_('[yellow]No packages found in the file to install.[/yellow]'))
         return
 
     for manager, packages in packages_to_install.items():
@@ -51,30 +62,42 @@ def import_packages(
                 package_ids = [pkg['name'] for pkg in packages]
 
             print(
-                f'Found {len(package_ids)} packages for [bold green]{manager}[/bold green].'
+                _(
+                    'Found {count} packages for [bold green]{manager}[/bold green].'
+                ).format(count=len(package_ids), manager=manager)
             )
 
             # Confirm before installing
             if typer.confirm(
-                f'Do you want to install these {len(package_ids)} packages using {manager}?'
+                _(
+                    'Do you want to install these {count} packages using {manager}?'
+                ).format(count=len(package_ids), manager=manager)
             ):
-                print(f'Installing packages with {manager}...')
+                print(
+                    _('Installing packages with {manager}...').format(
+                        manager=manager
+                    )
+                )
                 for package_id in package_ids:
                     try:
                         install_with_manager(package_id, manager=manager)
                     except SystemExit as e:
                         if e.code != 0:
                             print(
-                                f'[bold red]Failed to install {package_id}. Continuing with next package...[/bold red]'
+                                _(
+                                    '[bold red]Failed to install {package_id}. Continuing with next package...[/bold red]'
+                                ).format(package_id=package_id)
                             )
                 print(
-                    f'[bold green]✔ Installation process for {manager} complete.[/bold green]'
+                    _(
+                        '[bold green]✔ Installation process for {manager} complete.[/bold green]'
+                    ).format(manager=manager)
                 )
             else:
-                print(f'Skipping installation for {manager} packages.')
+                print(
+                    _('Skipping installation for {manager} packages.').format(
+                        manager=manager
+                    )
+                )
 
-    print('[bold green]✔ Import process finished![/bold green]')
-
-
-if __name__ == '__main__':
-    app()
+    print(_('[bold green]✔ Import process finished![/bold green]'))

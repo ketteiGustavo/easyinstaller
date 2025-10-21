@@ -14,6 +14,7 @@ from easyinstaller.core.lister import (
     get_installed_snap_packages_set,
 )
 from easyinstaller.core.runner import run_cmd_smart
+from easyinstaller.i18n.i18n import _
 
 console = Console()
 
@@ -52,7 +53,7 @@ MANAGER_TO_LISTER = {
 def _get_native_cmd(action: str, purge: bool = False) -> str:
     native_manager = get_native_manager_type()
     if native_manager == 'unknown':
-        raise ValueError('Unsupported native package manager.')
+        raise ValueError(_('Unsupported native package manager.'))
 
     if native_manager == 'apt' and action == 'remove' and purge:
         return MANAGER_CMDS['apt']['purge']
@@ -68,7 +69,7 @@ def _build_cmd(
     elif manager in MANAGER_CMDS:
         base = MANAGER_CMDS[manager][action]
     else:
-        raise ValueError(f'Unsupported manager: {manager}')
+        raise ValueError(_(f'Unsupported manager: {manager}'))
 
     return f'{base} {package}'
 
@@ -79,7 +80,9 @@ def remove_with_manager(package_name: str, manager: str, purge: bool = False):
     )
     if not lister_func:
         console.print(
-            f'[red]Error:[/red] No lister function found for manager: {manager}'
+            _(
+                '[red]Error:[/red] No lister function found for manager: {manager}'
+            ).format(manager=manager)
         )
         raise SystemExit(1)
 
@@ -91,9 +94,15 @@ def remove_with_manager(package_name: str, manager: str, purge: bool = False):
 
     if code != 0:
         console.print(
-            f'[bold red]Error removing {package_name} (manager: {manager}, exit code: {code}).[/bold red]'
+            _(
+                '[bold red]Error removing {package_name} (manager: {manager}, exit code: {code}).[/bold red]'
+            ).format(package_name=package_name, manager=manager, code=code)
         )
-        console.print(f'Check the log for details: {log_path}')
+        console.print(
+            _('Check the log for details: {log_path}').format(
+                log_path=log_path
+            )
+        )
         raise SystemExit(code)
 
     after_set = lister_func()
@@ -102,7 +111,9 @@ def remove_with_manager(package_name: str, manager: str, purge: bool = False):
     # If nothing was removed, it might be because the package didn't exist
     if not removed_packages:
         console.print(
-            f'[bold yellow]Package {package_name} was not installed or no changes were detected.[/bold yellow]'
+            _(
+                '[bold yellow]Package {package_name} was not installed or no changes were detected.[/bold yellow]'
+            ).format(package_name=package_name)
         )
         return
 
@@ -117,7 +128,9 @@ def remove_with_manager(package_name: str, manager: str, purge: bool = False):
     )
 
     console.print(
-        f'[bold green]✔ Successfully removed {package_name}.[/bold green]'
+        _(
+            '[bold green]✔ Successfully removed {package_name}.[/bold green]'
+        ).format(package_name=package_name)
     )
 
 
@@ -128,7 +141,9 @@ def install_with_manager(package_name: str, manager: str):
 
     if not lister_func:
         console.print(
-            f'[red]Error:[/red] No lister function found for manager: {manager}'
+            _(
+                '[red]Error:[/red] No lister function found for manager: {manager}'
+            ).format(manager=manager)
         )
         raise SystemExit(1)
 
@@ -146,9 +161,15 @@ def install_with_manager(package_name: str, manager: str):
 
     if code != 0:
         console.print(
-            f'[bold red]Error installing {package_name} (manager: {manager}, exit code: {code}).[/bold red]'
+            _(
+                '[bold red]Error installing {package_name} (manager: {manager}, exit code: {code}).[/bold red]'
+            ).format(package_name=package_name, manager=manager, code=code)
         )
-        console.print(f'Check the log for details: {log_path}')
+        console.print(
+            _('Check the log for details: {log_path}').format(
+                log_path=log_path
+            )
+        )
         raise SystemExit(code)
 
     after_set = lister_func()
@@ -156,7 +177,9 @@ def install_with_manager(package_name: str, manager: str):
 
     if not newly_installed:
         console.print(
-            f'[bold yellow]Package {package_name} is already installed or no changes were detected.[/bold yellow]'
+            _(
+                '[bold yellow]Package {package_name} is already installed or no changes were detected.[/bold yellow]'
+            ).format(package_name=package_name)
         )
         return
 
@@ -171,7 +194,13 @@ def install_with_manager(package_name: str, manager: str):
     )
 
     dep_count = len(newly_installed) - 1
-    dep_text = f'with {dep_count} dependencies' if dep_count > 0 else ''
+    dep_text = (
+        _('with {dep_count} dependencies').format(dep_count=dep_count)
+        if dep_count > 0
+        else ''
+    )
     console.print(
-        f'[bold green]✔ Successfully installed {package_name}[/] {dep_text}'
+        _(
+            '[bold green]✔ Successfully installed {package_name}[/] {dep_text}'
+        ).format(package_name=package_name, dep_text=dep_text)
     )

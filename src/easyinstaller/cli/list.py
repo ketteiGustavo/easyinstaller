@@ -3,12 +3,15 @@ from rich.console import Console
 from rich.table import Table
 
 from easyinstaller.core.lister import unified_lister
+from easyinstaller.i18n.i18n import _
 
 console = Console()
 
 app = typer.Typer(
     name='list',
-    help='Lists all installed packages, with an option to filter by manager.',
+    help=_(
+        'Lists all installed packages, with an option to filter by manager.'
+    ),
 )
 
 
@@ -16,7 +19,9 @@ app = typer.Typer(
 def list_packages(
     managers: list[str] = typer.Argument(
         None,
-        help='Optional: Specify one or more managers to list (e.g., apt, snap).',
+        help=_(
+            'Optional: Specify one or more managers to list (e.g., apt, snap).'
+        ),
     )
 ):
     """
@@ -26,26 +31,28 @@ def list_packages(
     if not managers:
         managers = None   # unified_lister handles None as 'all'
 
-    title = 'Installed Packages'
+    title = _('Installed Packages')
     if managers:
-        title = f"Installed Packages ({ ', '.join(managers) })"
+        title = _('Installed Packages ({managers_list})').format(
+            managers_list=', '.join(managers)
+        )
 
     with console.status(
-        '[bold green]Fetching installed packages...[/bold green]'
+        _('[bold green]Fetching installed packages...[/bold green]')
     ):
         packages = unified_lister(managers)
 
     if not packages:
         console.print(
-            '[yellow]No packages found for the specified managers.[/yellow]'
+            _('[yellow]No packages found for the specified managers.[/yellow]')
         )
         return
 
     table = Table(title=title)
-    table.add_column('Package Name', style='cyan', no_wrap=True)
-    table.add_column('Version', style='magenta')
-    table.add_column('Size', style='green')
-    table.add_column('Source', style='yellow')
+    table.add_column(_('Package Name'), style='cyan', no_wrap=True)
+    table.add_column(_('Version'), style='magenta')
+    table.add_column(_('Size'), style='green')
+    table.add_column(_('Source'), style='yellow')
 
     # Group packages by source for organized display
     grouped_packages = {}

@@ -4,12 +4,13 @@ from rich.console import Console
 from easyinstaller.cli.utils.ask import ask_user_to_select_packages
 from easyinstaller.core.lister import unified_lister
 from easyinstaller.core.package_handler import remove_with_manager
+from easyinstaller.i18n.i18n import _
 
 console = Console()
 
 app = typer.Typer(
     name='rm',
-    help='Finds and removes an installed package by its exact name.',
+    help=_('Finds and removes an installed package by its exact name.'),
     no_args_is_help=True,
 )
 
@@ -17,18 +18,20 @@ app = typer.Typer(
 @app.callback(invoke_without_command=True)
 def rm(
     packages_and_flags: list[str] = typer.Argument(
-        ..., help='One or more installed packages to remove.'
+        ..., help=_('One or more installed packages to remove.')
     ),
     purge: bool = typer.Option(
         False,
         '--purge',
-        help="Use 'purge' instead of 'remove' for apt (removes configuration files).",
+        help=_(
+            "Use 'purge' instead of 'remove' for apt (removes configuration files)."
+        ),
     ),
     yes: bool = typer.Option(
         False,
         '--yes',
         '-y',
-        help='Automatically answer "yes" to confirmation prompts.',
+        help=_('Automatically answer "yes" to confirmation prompts.'),
         is_flag=True,  # Keep for documentation purposes
     ),
 ):
@@ -46,21 +49,23 @@ def rm(
     # --- End of manual parsing ---
 
     if not packages_to_remove:
-        console.print('[red]Error:[/red] No package names provided.')
+        console.print(_('[red]Error:[/red] No package names provided.'))
         raise typer.Exit(code=1)
 
-    console.print('[cyan]Fetching installed packages...[/cyan]')
+    console.print(_('[cyan]Fetching installed packages...[/cyan]'))
     installed_packages = unified_lister()
 
     if not installed_packages:
         console.print(
-            '[yellow]No installed packages found on the system.[/yellow]'
+            _('[yellow]No installed packages found on the system.[/yellow]')
         )
         return
 
     for package_query in packages_to_remove:
         console.print(
-            f"---\n[bold]Searching for exact match for [yellow]'{package_query}'[/yellow]...[/bold]"
+            _(
+                "---\n[bold]Searching for exact match for [yellow]'{package_query}'[/yellow]...[/bold]"
+            ).format(package_query=package_query)
         )
 
         exact_matches = [
@@ -74,27 +79,35 @@ def rm(
         if len(exact_matches) == 1:
             package = exact_matches[0]
             if auto_confirm or typer.confirm(
-                f"Found installed package: {package['name']} [{package['source']}]\nRemove it?"
+                _(
+                    'Found installed package: {name} [{source}]\nRemove it?'
+                ).format(name=package['name'], source=package['source'])
             ):
                 packages_to_process.append(package)
 
         elif len(exact_matches) > 1:
             if auto_confirm:
                 console.print(
-                    f"[red]Error:[/red] Multiple packages named '[yellow]{package_query}[/yellow]' found. "
-                    f"Cannot use '-y' in an ambiguous situation. Please run without '-y' and select manually."
+                    _(
+                        "[red]Error:[/red] Multiple packages named '[yellow]{package_query}[/yellow]' found. "
+                        "Cannot use '-y' in an ambiguous situation. Please run without '-y' and select manually."
+                    ).format(package_query=package_query)
                 )
                 continue
 
             console.print(
-                f"Found multiple packages with the name [yellow]'{package_query}'[/yellow]'. Please choose which to remove."
+                _(
+                    "Found multiple packages with the name [yellow]'{package_query}'[/yellow]'. Please choose which to remove."
+                ).format(package_query=package_query)
             )
             selected = ask_user_to_select_packages(exact_matches)
             if selected:
                 packages_to_process.extend(selected)
         else:
             console.print(
-                f"[red]Error:[/red] Unable to locate an installed package named [yellow]'{package_query}'[/yellow].."
+                _(
+                    "[red]Error:[/red] Unable to locate an installed package named [yellow]'{package_query}'[/yellow].."
+                ).format(package_query=package_query)
             )
             continue
 
@@ -108,12 +121,20 @@ def rm(
 
                 if not package_id:
                     console.print(
-                        f'[red]Could not determine package identifier for {package}. Skipping.[/red]'
+                        _(
+                            '[red]Could not determine package identifier for {package}. Skipping.[/red]'
+                        ).format(package=package)
                     )
                     continue
 
                 console.print(
-                    f"Removing [green]{package['name']}[/green] ([cyan]{package_id}[/cyan]) from [cyan]{package['source']}[/cyan]..."
+                    _(
+                        'Removing [green]{name}[/green] ([cyan]{package_id}[/cyan]) from [cyan]{source}[/cyan]...'
+                    ).format(
+                        name=package['name'],
+                        package_id=package_id,
+                        source=package['source'],
+                    )
                 )
                 try:
                     remove_with_manager(
@@ -123,5 +144,7 @@ def rm(
                     )
                 except Exception as e:
                     console.print(
-                        f"[red]An error occurred while removing {package['name']}:[/red] {e}"
+                        _(
+                            '[red]An error occurred while removing {name}:[/red] {error}'
+                        ).format(name=package['name'], error=e)
                     )
