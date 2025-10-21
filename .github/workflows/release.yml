@@ -72,17 +72,23 @@ jobs:
           docker volume create aptlists >/dev/null
           docker volume create aptcache >/dev/null
 
+          # Caminhos ABSOLUTOS de cache no host
+          PIP_CACHE_HOST="$HOME/.cache/pip"
+          POETRY_CACHE_HOST="$HOME/.cache/pypoetry"
+          NUITKA_CACHE_HOST="$HOME/.cache/Nuitka"
+          CCACHE_HOST="$HOME/.ccache
+
           # Garante que os caches existem no host
-          mkdir -p "${PIP_CACHE}" "${POETRY_CACHE}" "${NUITKA_CACHE}" "${CCACHE_DIR_HOST}"
+          mkdir -p "$PIP_CACHE_HOST" "$POETRY_CACHE_HOST" "$NUITKA_CACHE_HOST" "$CCACHE_HOST
 
           docker run --rm \
             -v "${GITHUB_WORKSPACE}":/app \
             -v aptlists:/var/lib/apt/lists \
             -v aptcache:/var/cache/apt \
-            -v "${PIP_CACHE}":/root/.cache/pip \
-            -v "${POETRY_CACHE}":/root/.cache/pypoetry \
-            -v "${NUITKA_CACHE}":/root/.cache/Nuitka \
-            -v "${CCACHE_DIR_HOST}":/root/.ccache \
+            -v "$PIP_CACHE_HOST":/root/.cache/pip \
+            -v "$POETRY_CACHE_HOST":/root/.cache/pypoetry \
+            -v "$NUITKA_CACHE_HOST":/root/.cache/Nuitka \
+            -v "$CCACHE_HOST":/root/.ccache \
             -w /app \
             -e APP_VERSION \
             python:3.13-bullseye \
@@ -190,16 +196,22 @@ jobs:
           docker volume create apklib >/dev/null
           docker volume create apkcache >/dev/null
 
-          mkdir -p "${PIP_CACHE}" "${POETRY_CACHE}" "${NUITKA_CACHE}" "${CCACHE_DIR_HOST}"
+          # Caminhos ABSOLUTOS de cache no host
+          PIP_CACHE_HOST="$HOME/.cache/pip"
+          POETRY_CACHE_HOST="$HOME/.cache/pypoetry"
+          NUITKA_CACHE_HOST="$HOME/.cache/Nuitka"
+          CCACHE_HOST="$HOME/.ccache"
+
+          mkdir -p "$PIP_CACHE_HOST" "$POETRY_CACHE_HOST" "$NUITKA_CACHE_HOST" "$CCACHE_HOST"
 
           docker run --rm \
             -v "${GITHUB_WORKSPACE}":/app \
             -v apklib:/var/lib/apk \
             -v apkcache:/etc/apk/cache \
-            -v "${PIP_CACHE}":/root/.cache/pip \
-            -v "${POETRY_CACHE}":/root/.cache/pypoetry \
-            -v "${NUITKA_CACHE}":/root/.cache/Nuitka \
-            -v "${CCACHE_DIR_HOST}":/root/.ccache \
+            -v "$PIP_CACHE_HOST":/root/.cache/pip \
+            -v "$POETRY_CACHE_HOST":/root/.cache/pypoetry \
+            -v "$NUITKA_CACHE_HOST":/root/.cache/Nuitka \
+            -v "$CCACHE_HOST":/root/.ccache \
             -w /app \
             -e APP_VERSION \
             -e CCACHE_DIR=/root/.ccache \
