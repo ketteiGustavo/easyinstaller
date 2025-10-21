@@ -1,0 +1,689 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-21 16:34-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: Portuguese (Brazil) (https://www.transifex.com/projects/p/easyinstaller/language/pt_BR/)\n"
+"Language: pt_BR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/easyinstaller/cli/completion.py:8
+msgid "Manages shell completion for easyinstaller."
+msgstr ""
+
+#: src/easyinstaller/cli/completion.py:18
+msgid "The shell to install completion for (e.g., bash, zsh, fish)."
+msgstr ""
+
+#: src/easyinstaller/cli/completion.py:27
+#: src/easyinstaller/cli/completion.py:52
+#, python-brace-format
+msgid ""
+"[red]Error:[/red] Could not generate completion script for shell: [yellow]"
+"{shell}[/yellow]"
+msgstr ""
+
+#: src/easyinstaller/cli/completion.py:32
+#, python-brace-format
+msgid ""
+"To install completion for [bold green]{shell}[/bold green], add the "
+"following to your shell's config file (e.g., ~/.bashrc, ~/.zshrc):\n"
+msgstr ""
+
+#: src/easyinstaller/cli/completion.py:36
+#, python-brace-format
+msgid "Then, reload your shell (e.g., `source ~/.bashrc` or `exec {shell}`)."
+msgstr ""
+
+#: src/easyinstaller/cli/completion.py:43
+msgid "The shell to show completion for (e.g., bash, zsh, fish)."
+msgstr ""
+
+#: src/easyinstaller/cli/snap.py:9
+msgid "Install a package using Snap."
+msgstr ""
+
+#: src/easyinstaller/cli/snap.py:15
+msgid "One or more Snap packages to install."
+msgstr ""
+
+#: src/easyinstaller/cli/snap.py:23
+#, python-brace-format
+msgid ""
+"Adding [bold yellow]{package}[/bold yellow] via [bold green]Snap[/bold "
+"green]..."
+msgstr ""
+
+#: src/easyinstaller/cli/snap.py:29 src/easyinstaller/cli/apt.py:29
+#: src/easyinstaller/cli/flatpak.py:34
+#, python-brace-format
+msgid "[red]An error occurred for package {package}:[/red] {error}"
+msgstr ""
+
+#: src/easyinstaller/cli/apt.py:9
+msgid "Install a package using APT."
+msgstr ""
+
+#: src/easyinstaller/cli/apt.py:15
+msgid "One or more APT packages to install."
+msgstr ""
+
+#: src/easyinstaller/cli/apt.py:23
+#, python-brace-format
+msgid ""
+"Adding [bold yellow]{package}[/bold yellow] via [bold green]APT[/bold "
+"green]..."
+msgstr ""
+
+#: src/easyinstaller/cli/add.py:13
+msgid "Searches for and installs packages from apt, flatpak, and snap."
+msgstr ""
+
+#: src/easyinstaller/cli/add.py:21
+msgid "One or more packages to search for and install."
+msgstr ""
+
+#: src/easyinstaller/cli/add.py:29
+#, python-brace-format
+msgid ""
+"---\n"
+"[bold]Searching for [yellow]'{package_query}'[/yellow]...[/bold]"
+msgstr ""
+
+#: src/easyinstaller/cli/add.py:35
+#, python-brace-format
+msgid "No results found for [yellow]'{package_query}'[/yellow]."
+msgstr ""
+
+#: src/easyinstaller/cli/add.py:47
+#, python-brace-format
+msgid ""
+"Found one exact match: [green]{name}[/green] ([cyan]{source}[/cyan]). "
+"Installing automatically."
+msgstr ""
+
+#: src/easyinstaller/cli/add.py:57
+#, python-brace-format
+msgid "Installing [green]{name}[/green] from [cyan]{source}[/cyan]..."
+msgstr ""
+
+#: src/easyinstaller/cli/add.py:65
+#, python-brace-format
+msgid "[red]An error occurred while installing {name}:[/red] {error}"
+msgstr ""
+
+#: src/easyinstaller/cli/hist.py:14
+msgid ""
+"Displays the history of packages installed and removed by easyinstaller."
+msgstr ""
+
+#: src/easyinstaller/cli/hist.py:28
+msgid "[yellow]No history found.[/yellow]"
+msgstr ""
+
+#: src/easyinstaller/cli/hist.py:32
+msgid "EasyInstaller History"
+msgstr ""
+
+#: src/easyinstaller/cli/hist.py:37
+msgid "Date"
+msgstr ""
+
+#: src/easyinstaller/cli/hist.py:38
+msgid "Time"
+msgstr ""
+
+#: src/easyinstaller/cli/hist.py:39
+msgid "Action"
+msgstr ""
+
+#: src/easyinstaller/cli/hist.py:40
+msgid "Package"
+msgstr ""
+
+#: src/easyinstaller/cli/hist.py:41
+msgid "Manager"
+msgstr ""
+
+#: src/easyinstaller/cli/hist.py:42
+msgid "Details"
+msgstr ""
+
+#: src/easyinstaller/cli/hist.py:54 src/easyinstaller/cli/hist.py:55
+#: src/easyinstaller/cli/hist.py:56 src/easyinstaller/cli/hist.py:64
+msgid "N/A"
+msgstr ""
+
+#: src/easyinstaller/cli/hist.py:72
+msgid "{count} dependenc{'ies' if count > 1 else 'y'}"
+msgstr ""
+
+#: src/easyinstaller/cli/hist.py:76
+#, python-brace-format
+msgid "{count} packages removed"
+msgstr ""
+
+#: src/easyinstaller/cli/hist.py:90
+#, python-brace-format
+msgid "[bold red]Error reading history file:[/bold red] {error}"
+msgstr ""
+
+#: src/easyinstaller/cli/uninstall.py:11
+msgid "Uninstalls the easyinstaller (ei) application from the system."
+msgstr ""
+
+#: src/easyinstaller/cli/uninstall.py:25
+msgid "[bold yellow]Attempting to uninstall easyinstaller...[/bold yellow]"
+msgstr ""
+
+#: src/easyinstaller/cli/uninstall.py:30
+#, python-brace-format
+msgid "[red]Error:[/red] Uninstall script not found at [cyan]{path}[/cyan]."
+msgstr ""
+
+#: src/easyinstaller/cli/uninstall.py:33
+msgid "Easyinstaller may not have been installed with the install.sh script."
+msgstr ""
+
+#: src/easyinstaller/cli/uninstall.py:37
+msgid ""
+"Found uninstall script. Running with sudo...\n"
+"---"
+msgstr ""
+
+#: src/easyinstaller/cli/uninstall.py:48
+msgid "[red]Error:[/red] Could not execute 'sudo'. Is it in your PATH?"
+msgstr ""
+
+#: src/easyinstaller/cli/uninstall.py:53
+#, python-brace-format
+msgid ""
+"[red]Error:[/red] The uninstall script failed with exit code {code}.\n"
+"---"
+msgstr ""
+
+#: src/easyinstaller/cli/uninstall.py:57
+msgid ""
+"\n"
+"[yellow]Uninstall cancelled by user.[/yellow]"
+msgstr ""
+
+#: src/easyinstaller/cli/export.py:18
+msgid "Exports a list of all installed packages to a JSON file."
+msgstr ""
+
+#: src/easyinstaller/cli/export.py:40
+msgid "Optional: Specify one or more managers to export (e.g., apt, snap)."
+msgstr ""
+
+#: src/easyinstaller/cli/export.py:46
+msgid ""
+"Path to save the JSON file. Defaults to a timestamped file in ~/.local/share/"
+"easyinstaller/exports/."
+msgstr ""
+
+#: src/easyinstaller/cli/export.py:59
+msgid "[bold green]Starting export...[/bold green]"
+msgstr ""
+
+#: src/easyinstaller/cli/export.py:61
+msgid "[cyan]Gathering system and package information...[/cyan]"
+msgstr ""
+
+#: src/easyinstaller/cli/export.py:63
+#, python-brace-format
+msgid "[cyan]Gathering info for {managers_list} packages...[/cyan]"
+msgstr ""
+
+#: src/easyinstaller/cli/export.py:70 src/easyinstaller/cli/export.py:71
+msgid "Unknown"
+msgstr ""
+
+#: src/easyinstaller/cli/export.py:110
+msgid "[bold green]✔ Export successful![/bold green]"
+msgstr ""
+
+#: src/easyinstaller/cli/export.py:112
+#, python-brace-format
+msgid "[white]Setup file saved to:[/] [cyan]{output_file_path}[/cyan]"
+msgstr ""
+
+#: src/easyinstaller/cli/export.py:116
+#, python-brace-format
+msgid "[bold red]Error writing to file:[/bold red] {error}"
+msgstr ""
+
+#: src/easyinstaller/cli/list.py:12
+msgid "Lists all installed packages, with an option to filter by manager."
+msgstr ""
+
+#: src/easyinstaller/cli/list.py:20
+msgid "Optional: Specify one or more managers to list (e.g., apt, snap)."
+msgstr ""
+
+#: src/easyinstaller/cli/list.py:30
+msgid "Installed Packages"
+msgstr ""
+
+#: src/easyinstaller/cli/list.py:32
+#, python-brace-format
+msgid "Installed Packages ({managers_list})"
+msgstr ""
+
+#: src/easyinstaller/cli/list.py:35
+msgid "[bold green]Fetching installed packages...[/bold green]"
+msgstr ""
+
+#: src/easyinstaller/cli/list.py:41
+msgid "[yellow]No packages found for the specified managers.[/yellow]"
+msgstr ""
+
+#: src/easyinstaller/cli/list.py:46
+msgid "Package Name"
+msgstr ""
+
+#: src/easyinstaller/cli/list.py:47
+msgid "Version"
+msgstr ""
+
+#: src/easyinstaller/cli/list.py:48
+msgid "Size"
+msgstr ""
+
+#: src/easyinstaller/cli/list.py:49
+msgid "Source"
+msgstr ""
+
+#: src/easyinstaller/cli/utils/ask.py:15
+msgid "[yellow]No packages found.[/yellow]"
+msgstr ""
+
+#: src/easyinstaller/cli/utils/ask.py:27
+msgid "-"
+msgstr ""
+
+#: src/easyinstaller/cli/utils/ask.py:29
+msgid "Cancel"
+msgstr ""
+
+#: src/easyinstaller/cli/utils/ask.py:33
+msgid "Found multiple packages. Please select one or more to install:"
+msgstr ""
+
+#: src/easyinstaller/cli/utils/ask.py:40
+msgid "[red]Installation cancelled.[/red]"
+msgstr ""
+
+#: src/easyinstaller/cli/flatpak.py:11
+msgid "Install a package using Flatpak."
+msgstr ""
+
+#: src/easyinstaller/cli/flatpak.py:19
+msgid "One or more Flatpak packages to install."
+msgstr ""
+
+#: src/easyinstaller/cli/flatpak.py:27
+#, python-brace-format
+msgid ""
+"Adding [bold yellow]{package}[/bold yellow] via [bold green]Flatpak[/bold "
+"green]..."
+msgstr ""
+
+#: src/easyinstaller/cli/license.py:10
+msgid "Displays the easyinstaller license information."
+msgstr ""
+
+#: src/easyinstaller/cli/license.py:27
+#, python-brace-format
+msgid "[red]Error:[/red] License file not found at [cyan]{path}[/cyan]."
+msgstr ""
+
+#: src/easyinstaller/cli/license.py:30
+msgid "Please ensure easyinstaller was installed correctly or run `ei update`."
+msgstr ""
+
+#: src/easyinstaller/cli/license.py:39
+#, python-brace-format
+msgid "[red]Error reading license file:[/red] {error}"
+msgstr ""
+
+#: src/easyinstaller/cli/update.py:16
+msgid "Checks for and installs updates for easyinstaller."
+msgstr "Verifica e instala atualizações para o easyinstaller."
+
+#: src/easyinstaller/cli/update.py:47
+msgid "[red]Error: Could not find VERSION file.[/red]"
+msgstr ""
+
+#: src/easyinstaller/cli/update.py:50
+msgid ""
+"[red]Error reading current version:[/red] Failed to edit, 0 occurrences "
+"found for old_string (import os"
+msgstr ""
+
+#: src/easyinstaller/cli/update.py:549
+#, python-brace-format
+msgid "[red]Error fetching latest release from GitHub:[/red] {error}"
+msgstr ""
+
+#: src/easyinstaller/cli/update.py:588
+#, python-brace-format
+msgid "Downloading [cyan]{file_name}[/cyan]..."
+msgstr ""
+
+#: src/easyinstaller/cli/update.py:597
+#, python-brace-format
+msgid "[red]Error downloading {file_name}:[/red] {error}"
+msgstr ""
+
+#: src/easyinstaller/cli/update.py:611
+#, python-brace-format
+msgid "Replacing [cyan]{current_exe_path}[/cyan] with new version..."
+msgstr ""
+
+#: src/easyinstaller/cli/update.py:624
+msgid "[green]✔ Binary replaced successfully.[/green]"
+msgstr ""
+
+#: src/easyinstaller/cli/update.py:626
+#, python-brace-format
+msgid "[red]Error replacing binary:[/red] {error}"
+msgstr ""
+
+#: src/easyinstaller/cli/update.py:628
+msgid ""
+"[red]Please try running the update command with sudo: `sudo ei update`[/red]"
+msgstr ""
+
+#: src/easyinstaller/cli/update.py:638
+msgid "[bold green]Checking for updates...[/bold green]"
+msgstr ""
+
+#: src/easyinstaller/cli/update.py:642
+#, python-brace-format
+msgid "Current easyinstaller version: [yellow]{current_version}[/yellow]"
+msgstr ""
+
+#: src/easyinstaller/cli/update.py:647
+#, python-brace-format
+msgid "Latest available version: [green]{latest_version}[/green]"
+msgstr ""
+
+#: src/easyinstaller/cli/update.py:651
+msgid "[bold blue]You are already running the latest version.[/bold blue]"
+msgstr ""
+
+#: src/easyinstaller/cli/update.py:655
+msgid "[bold yellow]A new version is available![/bold yellow]"
+msgstr ""
+
+#: src/easyinstaller/cli/update.py:656
+msgid "Do you want to update now?"
+msgstr ""
+
+#: src/easyinstaller/cli/update.py:660
+#, python-brace-format
+msgid "Detected system architecture: [cyan]{system_arch}[/cyan]"
+msgstr ""
+
+#: src/easyinstaller/cli/update.py:681
+#, python-brace-format
+msgid ""
+"[red]Error: Could not find binary asset for {system_arch} in latest release."
+"[/red]"
+msgstr ""
+
+#: src/easyinstaller/cli/update.py:717
+msgid "[bold green]✔ easyinstaller updated successfully![/bold green]"
+msgstr ""
+
+#: src/easyinstaller/cli/update.py:722
+msgid ""
+"\n"
+"[bold blue]What's New:[/bold blue]"
+msgstr ""
+
+#: src/easyinstaller/cli/update.py:728
+msgid "Please restart your shell or terminal for changes to take full effect."
+msgstr ""
+
+#: src/easyinstaller/cli/import_app.py:11
+msgid "Installs packages from a previously exported JSON file."
+msgstr ""
+
+#: src/easyinstaller/cli/import_app.py:20
+msgid "Path to the JSON file containing the list of packages to install."
+msgstr ""
+
+#: src/easyinstaller/cli/import_app.py:26
+#, python-brace-format
+msgid "Starting import from: [bold cyan]{file_path}[/bold cyan]"
+msgstr ""
+
+#: src/easyinstaller/cli/import_app.py:33
+#, python-brace-format
+msgid "[bold red]Error:[/bold red] File not found at [cyan]{file_path}[/cyan]"
+msgstr ""
+
+#: src/easyinstaller/cli/import_app.py:38
+#, python-brace-format
+msgid ""
+"[bold red]Error:[/bold red] Could not decode JSON from [cyan]{file_path}[/"
+"cyan]"
+msgstr ""
+
+#: src/easyinstaller/cli/import_app.py:44
+msgid "[yellow]No packages found in the file to install.[/yellow]"
+msgstr ""
+
+#: src/easyinstaller/cli/import_app.py:55
+#, python-brace-format
+msgid "Found {count} packages for [bold green]{manager}[/bold green]."
+msgstr ""
+
+#: src/easyinstaller/cli/import_app.py:60
+#, python-brace-format
+msgid "Do you want to install these {count} packages using {manager}?"
+msgstr ""
+
+#: src/easyinstaller/cli/import_app.py:62
+#, python-brace-format
+msgid "Installing packages with {manager}..."
+msgstr ""
+
+#: src/easyinstaller/cli/import_app.py:69
+#, python-brace-format
+msgid ""
+"[bold red]Failed to install {package_id}. Continuing with next package...[/"
+"bold red]"
+msgstr ""
+
+#: src/easyinstaller/cli/import_app.py:72
+#, python-brace-format
+msgid "[bold green]✔ Installation process for {manager} complete.[/bold green]"
+msgstr ""
+
+#: src/easyinstaller/cli/import_app.py:75
+#, python-brace-format
+msgid "Skipping installation for {manager} packages."
+msgstr ""
+
+#: src/easyinstaller/cli/import_app.py:77
+msgid "[bold green]✔ Import process finished![/bold green]"
+msgstr ""
+
+#: src/easyinstaller/cli/remove.py:13
+msgid "Finds and removes an installed package by its exact name."
+msgstr ""
+
+#: src/easyinstaller/cli/remove.py:21
+msgid "One or more installed packages to remove."
+msgstr ""
+
+#: src/easyinstaller/cli/remove.py:26
+msgid "Use 'purge' instead of 'remove' for apt (removes configuration files)."
+msgstr ""
+
+#: src/easyinstaller/cli/remove.py:32
+msgid "Automatically answer \"yes\" to confirmation prompts."
+msgstr ""
+
+#: src/easyinstaller/cli/remove.py:50
+msgid "[red]Error:[/red] No package names provided."
+msgstr ""
+
+#: src/easyinstaller/cli/remove.py:53
+msgid "[cyan]Fetching installed packages...[/cyan]"
+msgstr ""
+
+#: src/easyinstaller/cli/remove.py:58
+msgid "[yellow]No installed packages found on the system.[/yellow]"
+msgstr ""
+
+#: src/easyinstaller/cli/remove.py:64
+#, python-brace-format
+msgid ""
+"---\n"
+"[bold]Searching for exact match for [yellow]'{package_query}'[/yellow]...[/"
+"bold]"
+msgstr ""
+
+#: src/easyinstaller/cli/remove.py:78
+#, python-brace-format
+msgid ""
+"Found installed package: {name} [{source}]\n"
+"Remove it?"
+msgstr ""
+
+#: src/easyinstaller/cli/remove.py:85
+#, python-brace-format
+msgid ""
+"[red]Error:[/red] Multiple packages named '[yellow]{package_query}[/yellow]' "
+"found. Cannot use '-y' in an ambiguous situation. Please run without '-y' "
+"and select manually."
+msgstr ""
+
+#: src/easyinstaller/cli/remove.py:91
+#, python-brace-format
+msgid ""
+"Found multiple packages with the name [yellow]'{package_query}'[/yellow]'. "
+"Please choose which to remove."
+msgstr ""
+
+#: src/easyinstaller/cli/remove.py:98
+#, python-brace-format
+msgid ""
+"[red]Error:[/red] Unable to locate an installed package named "
+"[yellow]'{package_query}'[/yellow].."
+msgstr ""
+
+#: src/easyinstaller/cli/remove.py:112
+#, python-brace-format
+msgid ""
+"[red]Could not determine package identifier for {package}. Skipping.[/red]"
+msgstr ""
+
+#: src/easyinstaller/cli/remove.py:117
+#, python-brace-format
+msgid ""
+"Removing [green]{name}[/green] ([cyan]{package_id}[/cyan]) from [cyan]"
+"{source}[/cyan]..."
+msgstr ""
+
+#: src/easyinstaller/cli/remove.py:127
+#, python-brace-format
+msgid "[red]An error occurred while removing {name}:[/red] {error}"
+msgstr ""
+
+#: src/easyinstaller/core/package_handler.py:56
+msgid "Unsupported native package manager."
+msgstr ""
+
+#: src/easyinstaller/core/package_handler.py:72
+#, python-brace-format
+msgid "Unsupported manager: {manager}"
+msgstr ""
+
+#: src/easyinstaller/core/package_handler.py:83
+#: src/easyinstaller/core/package_handler.py:132
+#, python-brace-format
+msgid "[red]Error:[/red] No lister function found for manager: {manager}"
+msgstr ""
+
+#: src/easyinstaller/core/package_handler.py:95
+#, python-brace-format
+msgid ""
+"[bold red]Error removing {package_name} (manager: {manager}, exit code: "
+"{code}).[/bold red]"
+msgstr ""
+
+#: src/easyinstaller/core/package_handler.py:97
+#: src/easyinstaller/core/package_handler.py:152
+#, python-brace-format
+msgid "Check the log for details: {log_path}"
+msgstr ""
+
+#: src/easyinstaller/core/package_handler.py:106
+#, python-brace-format
+msgid ""
+"[bold yellow]Package {package_name} was not installed or no changes were "
+"detected.[/bold yellow]"
+msgstr ""
+
+#: src/easyinstaller/core/package_handler.py:121
+#, python-brace-format
+msgid "[bold green]✔ Successfully removed {package_name}.[/bold green]"
+msgstr ""
+
+#: src/easyinstaller/core/package_handler.py:150
+#, python-brace-format
+msgid ""
+"[bold red]Error installing {package_name} (manager: {manager}, exit code: "
+"{code}).[/bold red]"
+msgstr ""
+
+#: src/easyinstaller/core/package_handler.py:160
+#, python-brace-format
+msgid ""
+"[bold yellow]Package {package_name} is already installed or no changes were "
+"detected.[/bold yellow]"
+msgstr ""
+
+#: src/easyinstaller/core/package_handler.py:175
+#, python-brace-format
+msgid "with {dep_count} dependencies"
+msgstr ""
+
+#: src/easyinstaller/core/package_handler.py:177
+#, python-brace-format
+msgid "[bold green]✔ Successfully installed {package_name}[/] {dep_text}"
+msgstr ""
+
+#: src/easyinstaller/core/searcher.py:23
+#, python-brace-format
+msgid "Error during search: {error}"
+msgstr ""
+
+#: src/easyinstaller/core/runner.py:33
+msgid "Installing..."
+msgstr ""
+
+#: src/easyinstaller/core/runner.py:57
+#, python-brace-format
+msgid "[bold cyan]Running (no pexpect):[/] {cmd}"
+msgstr ""
+
+#: src/easyinstaller/core/runner.py:70
+#, python-brace-format
+msgid "Running: {cmd_name}..."
+msgstr ""
