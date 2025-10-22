@@ -50,9 +50,10 @@ latest_tag() {
     error "Não consegui descobrir a última release (cabeçalho 'location' não encontrado)."
   fi
 
-  # Extrai a tag da URL. Ex: location: .../tag/v0.1.0 -> v0.1.0
+  # Extrai a tag da URL e remove quaisquer caracteres de controle (como \r).
+  # Ex: location: .../tag/v0.1.0 -> v0.1.0
   local tag
-  tag=$(echo "$location_header" | sed -n 's|.*/tag/\(v[0-9.]*\)|\1|p')
+  tag=$(echo "$location_header" | sed -n 's|.*/tag/\(v[0-9.]*\)|\1|p' | tr -d '[:cntrl:]')
 
   [ -n "${tag:-}" ] || error "Não consegui extrair a tag da URL: ${location_header}"
   echo "$tag"
