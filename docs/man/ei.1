@@ -1,45 +1,95 @@
 .\" Man page for ei
 .\" Contact luizg.devlx@gmail.com to correct errors or typos.
-.\"
-.TH ei 1 "October 2025" "easyinstaller 0.1.0" "easyinstaller man page"
+.TH EI 1 "October 2025" "easyinstaller 0.1.0" "User Commands"
 .SH NAME
-ei - A universal installation manager for Linux.
-
+ei \- universal installation manager for Linux
 .SH SYNOPSIS
 .B ei
-[OPTIONS] COMMAND [ARGS]...
-
+[\fICOMMAND\fR] [\fIARGS\fR...]
 .SH DESCRIPTION
-.B easyinstaller (ei)
- is a command-line tool to simplify package management across different Linux package managers like APT, Flatpak, and Snap. It provides a unified interface to add, remove, list, and manage packages.
-
+\fBeasyinstaller (ei)\fR is a command-line tool that simplifies package management
+across different Linux package managers like APT, Flatpak, and Snap.
+It provides a unified interface to add, remove, list, and manage packages
+from a single entry point.
 .SH COMMANDS
 .TP
-.B add <package_name>...
-Find and install a package from any available source (apt, flatpak, snap).
+.B add
+\fI<package_name>...\fR
+Search for and install one or more packages from APT, Flatpak, and Snap.
+If an exact match is found, it is installed automatically;
+otherwise, an interactive selection menu is presented.
+
 .TP
-.B rm <package_name>...
-Remove an installed package. Use -y for non-interactive removal.
+.B rm
+[\fIOPTIONS\fR] \fI<package_name>...\fR
+Find and remove an installed package by its exact name.
+.RS
+.TP
+.B -y , --yes
+Automatically answer "yes" to confirmation prompts.
+.TP
+.B --purge
+For APT packages, use "purge" to remove configuration files as well.
+.RE
+
 .TP
 .B list
-List installed packages, optionally filtering by manager (apt, flatpak, snap).
+[\fImanager...\fR]
+List all installed packages, grouped by manager.
+Can be filtered by providing one or more manager names
+(e.g. \fBei list apt snap\fR).
+
 .TP
 .B export
-Export all installed packages to a JSON file.
+[\fIOPTIONS\fR] [\fImanager...\fR]
+Export a list of installed packages to a JSON file. Can be filtered by manager.
+.RS
 .TP
-.B import <file_path>
-Import and install packages from a setup.json file.
+.B -o , --output \fI<file_path>\fR
+Path to save the JSON file. Defaults to a timestamped file in the exports directory.
+.RE
+
+.TP
+.B import
+\fI<file_path>\fR
+Install packages from a previously exported JSON file.
+
 .TP
 .B hist
-Displays the installation and removal history.
+Display the history of packages installed and removed by easyinstaller,
+sorted by most recent.
+
 .TP
 .B uninstall
-Uninstalls the easyinstaller (ei) application itself from the system.
-
-.SH OPTIONS
+Uninstall the easyinstaller (ei) application itself from the system.
+Requires that \fBei\fR was installed using the official \fBinstall.sh\fR script.
+.SH EXAMPLES
 .TP
-.B --help
-Show help message and exit.
+.B ei add htop tree
+Search for and install htop and tree.
 
+.TP
+.B ei rm htop -y
+Remove htop without asking for confirmation.
+
+.TP
+.B ei export -o my-setup.json apt
+Export only APT packages to a file named \fBmy-setup.json\fR.
+
+.TP
+.B ei list
+List all packages installed via APT, Flatpak, and Snap.
+.SH FILES
+.TP
+.I ~/.config/easyinstaller/config.json
+User-specific configuration file defining default paths for logs, exports, and history.
+.TP
+.I ~/.local/share/easyinstaller/history.jsonl
+History log file.
+.SH SEE ALSO
+.TP
+.B GitHub:
+.UR https://github.com/ketteiGustavo/easyinstaller
+.UE
 .SH AUTHOR
 Luiz Gustavo <luizg.devlx@gmail.com>
