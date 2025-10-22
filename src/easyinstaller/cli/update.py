@@ -21,27 +21,6 @@ console = Console()
 GITHUB_REPO = 'ketteiGustavo/easyinstaller'
 DATA_DIR = '/usr/local/share/easyinstaller'
 
-import platform
-import shutil
-import subprocess
-import sys
-
-import requests
-import typer
-from rich.console import Console
-from rich.markdown import Markdown
-
-app = typer.Typer(
-    name='update',
-    help='Checks for and installs updates for easyinstaller.',
-    no_args_is_help=True,
-)
-console = Console()
-
-GITHUB_REPO = 'ketteiGustavo/easyinstaller'
-DATA_DIR = '/usr/local/share/easyinstaller'
-
-
 def get_current_version() -> str:
     """
     Reads the current version from the bundled VERSION file.

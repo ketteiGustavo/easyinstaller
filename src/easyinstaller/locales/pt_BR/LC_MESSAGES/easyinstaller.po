@@ -703,6 +703,14 @@ msgstr "[bold cyan]Executando (sem pexpect):[/] {cmd}"
 msgid "Running: {cmd_name}..."
 msgstr "Executando: {cmd_name}..."
 
+#: src/easyinstaller/main.py:24
+msgid ""
+"[bold green]EasyInstaller[/bold green]: A universal package manager for "
+"Linux, simplifying apt, flatpak, and snap."
+msgstr ""
+"[bold green]EasyInstaller[/bold green]: Um gerenciador universal de pacotes "
+"para Linux, simplificando apt, flatpak e snap."
+
 #: src/easyinstaller/cli/completion.py:30
 msgid ""
 "Shell \"[yellow]{shell}[/yellow]\" is not supported. Supported shells: "

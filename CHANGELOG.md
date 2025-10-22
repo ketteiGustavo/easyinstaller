@@ -7,3 +7,4 @@
 - :🔧: chore: ajuste em ci do actions (por: Luiz Gustavo em 20-10-2025 17:33)
 - :🧱: ci: melhoria no ci (por: Luiz Gustavo em 20-10-2025 18:07)
 - :🧱: ci: ajuste no ci, com libs minimas para rodar (por: Luiz Gustavo em 20-10-2025 18:26)
+- :🐛: fix: correção de bug que não traduzia help (por: Luiz Gustavo em 22-10-2025 13:22)
