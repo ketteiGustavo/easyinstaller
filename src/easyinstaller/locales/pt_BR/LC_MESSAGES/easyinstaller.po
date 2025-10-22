@@ -804,3 +804,87 @@ msgid ""
 msgstr ""
 "[blue]Reabra os comandos do EasyInstaller para ver todas as mensagens no "
 "idioma selecionado.[/blue]"
+
+#: src/easyinstaller/cli/export.py:37
+msgid "Exports lists of applications or full system setups to JSON."
+msgstr "Exporta listas de aplicativos ou configurações completas do sistema para JSON."
+
+#: src/easyinstaller/cli/export.py:97
+msgid "Invalid export mode \"[yellow]{mode}[/yellow]\". Supported modes: full, apps, favorites."
+msgstr "Modo de exportação \"[yellow]{mode}[/yellow]\" inválido. Modos suportados: full, apps, favorites."
+
+#: src/easyinstaller/cli/export.py:109
+msgid "Invalid manager \"[yellow]{manager}[/yellow]\". Choose from: {choices}"
+msgstr "Gerenciador \"[yellow]{manager}[/yellow]\" inválido. Escolha entre: {choices}"
+
+#: src/easyinstaller/cli/export.py:145
+msgid "Optional package managers to include (apt, flatpak, snap)."
+msgstr "Gerenciadores opcionais para incluir (apt, flatpak, snap)."
+
+#: src/easyinstaller/cli/export.py:161
+msgid "Path to save the JSON file. Defaults to ~/.local/share/easyinstaller/exports/ with a mode-based name."
+msgstr "Caminho para salvar o arquivo JSON. O padrão é ~/.local/share/easyinstaller/exports/ com um nome baseado no modo."
+
+#: src/easyinstaller/cli/export.py:169
+msgid "[yellow]No favorites defined yet. Use `ei favorites` to create your list.[/yellow]"
+msgstr "[yellow]Nenhum favorito definido ainda. Use `ei favorites` para criar sua lista.[/yellow]"
+
+#: src/easyinstaller/cli/export.py:204
+msgid "[white]Export saved to:[/] [cyan]{output_file_path}[/cyan]"
+msgstr "[white]Exportação salva em:[/] [cyan]{output_file_path}[/cyan]"
+
+#: src/easyinstaller/cli/export.py:209
+msgid "Manage and export your favorite applications."
+msgstr "Gerencia e exporta seus aplicativos favoritos."
+
+#: src/easyinstaller/cli/favorites.py:34
+msgid "[red]Questionary is required for interactive selection.[/red] Install it with `pip install questionary` and retry."
+msgstr "[red]Questionary é necessário para a seleção interativa.[/red] Instale-o com `pip install questionary` e tente novamente."
+
+#: src/easyinstaller/cli/favorites.py:42
+msgid "[red]Interactive selection requires a TTY.[/red] Run this command directly in a terminal."
+msgstr "[red]A seleção interativa exige um TTY.[/red] Execute este comando diretamente em um terminal."
+
+#: src/easyinstaller/cli/favorites.py:90
+msgid "Limit selection to specific managers (apt, flatpak, snap)."
+msgstr "Limita a seleção a gerenciadores específicos (apt, flatpak, snap)."
+
+#: src/easyinstaller/cli/favorites.py:102
+msgid "[yellow]No applications detected for the selected managers.[/yellow]"
+msgstr "[yellow]Nenhum aplicativo detectado para os gerenciadores selecionados.[/yellow]"
+
+#: src/easyinstaller/cli/favorites.py:117
+msgid "Select your favorite applications:"
+msgstr "Selecione seus aplicativos favoritos:"
+
+#: src/easyinstaller/cli/favorites.py:123
+msgid "[yellow]Selection cancelled. Favorites unchanged.[/yellow]"
+msgstr "[yellow]Seleção cancelada. Favoritos inalterados.[/yellow]"
+
+#: src/easyinstaller/cli/favorites.py:129
+msgid "[bold green]Favorite list updated ({count} applications).[/bold green]"
+msgstr "[bold green]Lista de favoritos atualizada ({count} aplicativos).[/bold green]"
+
+#: src/easyinstaller/cli/favorites.py:153
+msgid "Favorite applications"
+msgstr "Aplicativos favoritos"
+
+#: src/easyinstaller/cli/favorites.py:171
+msgid "[yellow]No favorites saved yet.[/yellow]"
+msgstr "[yellow]Nenhum favorito salvo ainda.[/yellow]"
+
+#: src/easyinstaller/cli/favorites.py:183
+msgid "Skip confirmation prompt and clear favorites immediately."
+msgstr "Ignora a confirmação e limpa os favoritos imediatamente."
+
+#: src/easyinstaller/cli/favorites.py:193
+msgid "[yellow]Favorites list is already empty.[/yellow]"
+msgstr "[yellow]A lista de favoritos já está vazia.[/yellow]"
+
+#: src/easyinstaller/cli/favorites.py:199
+msgid "Remove all favorite applications?"
+msgstr "Remover todos os aplicativos favoritos?"
+
+#: src/easyinstaller/cli/favorites.py:208
+msgid "[bold green]Favorites cleared.[/bold green]"
+msgstr "[bold green]Favoritos limpos.[/bold green]"

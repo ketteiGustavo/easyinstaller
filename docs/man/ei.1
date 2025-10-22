@@ -41,12 +41,51 @@ Can be filtered by providing one or more manager names
 
 .TP
 .B export
-[\fIOPTIONS\fR] [\fImanager...\fR]
-Export a list of installed packages to a JSON file. Can be filtered by manager.
+\fIsubcommand\fR [\fIOPTIONS\fR]
+Export installed software information to JSON. Subcommands:
 .RS
 .TP
+.B full
+Include system metadata and every installed package (executed by default when no subcommand is supplied).
+.TP
+.B apps
+Export only user-facing applications, filtering packages that belong to the base distribution.
+.TP
+.B favorites
+Export the list maintained via \fBei favorites\fR.
+.TP
+.B -m , --manager \fI<manager>\fR
+Limit the export to specific managers (apt, flatpak, snap).
+.TP
 .B -o , --output \fI<file_path>\fR
-Path to save the JSON file. Defaults to a timestamped file in the exports directory.
+Custom path for the generated JSON file. Defaults to a timestamped file in \fI~/.local/share/easyinstaller/exports/\fR.
+.RE
+
+.TP
+.B favorites
+Manage favourite applications. Without arguments an interactive picker is opened (requires a TTY). Subcommands:
+.RS
+.TP
+.B list
+Show saved favourites grouped by manager.
+.TP
+.B clear
+Remove all favourites (use \fB-y\fR to skip the confirmation).
+.RE
+
+.TP
+.B config
+Show and update EasyInstaller configuration.
+.RS
+.TP
+.B get \fI<key>\fR
+Print the current value for a configuration key.
+.TP
+.B set \fI<key>\fR \fI<value>\fR
+Persist a new value for the given key.
+.TP
+.B language [\fIcode\fR]
+Select the interface language interactively or set it directly (e.g. \fBen_US\fR, \fBpt_BR\fR).
 .RE
 
 .TP
@@ -77,8 +116,24 @@ Remove htop without asking for confirmation.
 Export only APT packages to a file named \fBmy-setup.json\fR.
 
 .TP
+.B ei export apps -m apt
+Export only user-facing APT applications.
+
+.TP
+.B ei export favorites -o fav.json
+Export the current favourites to \fBfav.json\fR.
+
+.TP
 .B ei list
 List all packages installed via APT, Flatpak, and Snap.
+
+.TP
+.B ei favorites
+Open the interactive selector and choose the applications to mark as favourites.
+
+.TP
+.B ei config language
+Set the interface language interactively.
 .SH FILES
 .TP
 .I ~/.config/easyinstaller/config.json
@@ -86,6 +141,9 @@ User-specific configuration file defining default paths for logs, exports, and h
 .TP
 .I ~/.local/share/easyinstaller/history.jsonl
 History log file.
+.TP
+.I ~/.config/easyinstaller/favorites.json
+List of favourite applications maintained via \fBei favorites\fR.
 .SH SEE ALSO
 .TP
 .B GitHub:

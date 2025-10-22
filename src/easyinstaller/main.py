@@ -10,6 +10,7 @@ from easyinstaller.cli import apt as apt_app
 from easyinstaller.cli import completion as completion_app
 from easyinstaller.cli import config as config_app
 from easyinstaller.cli import export as export_app
+from easyinstaller.cli import favorites as favorites_app
 from easyinstaller.cli import flatpak as flatpak_app
 from easyinstaller.cli import hist as hist_app
 from easyinstaller.cli import import_app
@@ -37,6 +38,7 @@ app.add_typer(export_app.app, name='export')
 app.add_typer(import_app.app, name='import')
 app.add_typer(hist_app.app, name='hist')
 app.add_typer(config_app.app, name='config')
+app.add_typer(favorites_app.app, name='favorites')
 app.add_typer(uninstall_app.app, name='uninstall')
 app.add_typer(apt_app.app, name='apt')
 app.add_typer(flatpak_app.app, name='fp')

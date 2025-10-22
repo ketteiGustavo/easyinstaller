@@ -848,3 +848,83 @@ msgid ""
 msgstr ""
 "[blue]Reopen EasyInstaller commands to see every message in the selected "
 "language.[/blue]"
+
+#: src/easyinstaller/cli/export.py:37
+msgid "Exports lists of applications or full system setups to JSON."
+msgstr "Exports lists of applications or full system setups to JSON."
+
+#: src/easyinstaller/cli/export.py:97
+msgid "Invalid export mode \"[yellow]{mode}[/yellow]\". Supported modes: full, apps, favorites."
+msgstr "Invalid export mode \"[yellow]{mode}[/yellow]\". Supported modes: full, apps, favorites."
+
+#: src/easyinstaller/cli/export.py:109
+msgid "Invalid manager \"[yellow]{manager}[/yellow]\". Choose from: {choices}"
+msgstr "Invalid manager \"[yellow]{manager}[/yellow]\". Choose from: {choices}"
+
+#: src/easyinstaller/cli/export.py:161
+msgid "Path to save the JSON file. Defaults to ~/.local/share/easyinstaller/exports/ with a mode-based name."
+msgstr "Path to save the JSON file. Defaults to ~/.local/share/easyinstaller/exports/ with a mode-based name."
+
+#: src/easyinstaller/cli/export.py:169
+msgid "[yellow]No favorites defined yet. Use `ei favorites` to create your list.[/yellow]"
+msgstr "[yellow]No favorites defined yet. Use `ei favorites` to create your list.[/yellow]"
+
+#: src/easyinstaller/cli/export.py:204
+msgid "[white]Export saved to:[/] [cyan]{output_file_path}[/cyan]"
+msgstr "[white]Export saved to:[/] [cyan]{output_file_path}[/cyan]"
+
+#: src/easyinstaller/cli/favorites.py:26
+msgid "Manage and export your favorite applications."
+msgstr "Manage and export your favorite applications."
+
+#: src/easyinstaller/cli/favorites.py:34
+msgid "[red]Questionary is required for interactive selection.[/red] Install it with `pip install questionary` and retry."
+msgstr "[red]Questionary is required for interactive selection.[/red] Install it with `pip install questionary` and retry."
+
+#: src/easyinstaller/cli/favorites.py:42
+msgid "[red]Interactive selection requires a TTY.[/red] Run this command directly in a terminal."
+msgstr "[red]Interactive selection requires a TTY.[/red] Run this command directly in a terminal."
+
+#: src/easyinstaller/cli/favorites.py:90
+msgid "Limit selection to specific managers (apt, flatpak, snap)."
+msgstr "Limit selection to specific managers (apt, flatpak, snap)."
+
+#: src/easyinstaller/cli/favorites.py:102
+msgid "[yellow]No applications detected for the selected managers.[/yellow]"
+msgstr "[yellow]No applications detected for the selected managers.[/yellow]"
+
+#: src/easyinstaller/cli/favorites.py:117
+msgid "Select your favorite applications:"
+msgstr "Select your favorite applications:"
+
+#: src/easyinstaller/cli/favorites.py:123
+msgid "[yellow]Selection cancelled. Favorites unchanged.[/yellow]"
+msgstr "[yellow]Selection cancelled. Favorites unchanged.[/yellow]"
+
+#: src/easyinstaller/cli/favorites.py:129
+msgid "[bold green]Favorite list updated ({count} applications).[/bold green]"
+msgstr "[bold green]Favorite list updated ({count} applications).[/bold green]"
+
+#: src/easyinstaller/cli/favorites.py:153
+msgid "Favorite applications"
+msgstr "Favorite applications"
+
+#: src/easyinstaller/cli/favorites.py:171
+msgid "[yellow]No favorites saved yet.[/yellow]"
+msgstr "[yellow]No favorites saved yet.[/yellow]"
+
+#: src/easyinstaller/cli/favorites.py:183
+msgid "Skip confirmation prompt and clear favorites immediately."
+msgstr "Skip confirmation prompt and clear favorites immediately."
+
+#: src/easyinstaller/cli/favorites.py:193
+msgid "[yellow]Favorites list is already empty.[/yellow]"
+msgstr "[yellow]Favorites list is already empty.[/yellow]"
+
+#: src/easyinstaller/cli/favorites.py:199
+msgid "Remove all favorite applications?"
+msgstr "Remove all favorite applications?"
+
+#: src/easyinstaller/cli/favorites.py:208
+msgid "[bold green]Favorites cleared.[/bold green]"
+msgstr "[bold green]Favorites cleared.[/bold green]"

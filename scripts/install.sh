@@ -15,6 +15,55 @@ info()  { printf "\033[1;34m[INFO]\033[0m %s\n" "$*"; }
 warn()  { printf "\033[1;33m[WARN]\033[0m %s\n" "$*"; }
 error() { printf "\033[1;31m[ERROR]\033[0m %s\n" "$*" >&2; exit 1; }
 
+prompt_language() {
+  if [ -n "${EASYINSTALLER_LANG:-}" ]; then
+    return
+  fi
+
+  printf "\nSelecione o idioma padrão do EasyInstaller:\n"
+  printf "  1) English (United States) [en_US]\n"
+  printf "  2) Português (Brasil) [pt_BR]\n"
+  printf "Escolha [1]: "
+
+  local choice
+  read -r choice || choice=""
+  case "${choice:-1}" in
+    2|pt_BR|PT|pt|br|BR) EASYINSTALLER_LANG="pt_BR" ;;
+    *) EASYINSTALLER_LANG="en_US" ;;
+  esac
+
+  export EASYINSTALLER_LANG
+  printf "\n"
+}
+
+apply_language_preference() {
+  local lang="${EASYINSTALLER_LANG:-}"
+  [ -z "$lang" ] && return
+
+  local ei_binary="${INSTALL_DIR}/${BINARY_BASENAME}"
+  if [ ! -x "$ei_binary" ]; then
+    warn "Não foi possível configurar o idioma automaticamente (binário não encontrado)."
+    return
+  }
+
+  local target_user="${SUDO_USER:-$(logname 2>/dev/null || echo root)}"
+  local cmd=( "$ei_binary" config set language "$lang" )
+
+  if [ "$target_user" = "root" ]; then
+    if EASYINSTALLER_LANG="$lang" "${cmd[@]}" >/dev/null 2>&1; then
+      info "Idioma padrão configurado para ${lang}."
+    else
+      warn "Não foi possível definir o idioma preferido automaticamente."
+    fi
+  else
+    if sudo -u "$target_user" EASYINSTALLER_LANG="$lang" "${cmd[@]}" >/dev/null 2>&1; then
+      info "Idioma padrão configurado para ${lang} (usuário ${target_user})."
+    else
+      warn "Não foi possível definir o idioma preferido para o usuário ${target_user}."
+    fi
+  fi
+}
+
 # --- Privs ---
 require_root() {
   if [ "$(id -u)" -ne 0 ]; then
@@ -87,6 +136,7 @@ cleanup() { for f in "${cleanups[@]:-}"; do [ -e "$f" ] && rm -f "$f"; done; }
 trap cleanup EXIT
 
 main() {
+  prompt_language
   require_root "$@"
 
   info "Instalando ${PROJECT_NAME}…"
@@ -151,6 +201,8 @@ main() {
     info "Atualizando man-db…"
     mandb >/dev/null 2>&1 || true
   fi
+
+  apply_language_preference
 
   info "✔ Instalação concluída! Execute: ${BINARY_BASENAME} --help"
   info "Desinstalar: sudo ${DATA_DIR}/uninstall.sh (se baixado)"

@@ -75,7 +75,7 @@ def list_apt_packages():
             [
                 'dpkg-query',
                 '-W',
-                "-f='${Package}\t${Version}\t${Installed-Size}\n'",
+                "-f='${Package}\t${Version}\t${Installed-Size}\t${Section}\t${Priority}\n'",
             ],
             capture_output=True,
             text=True,
@@ -86,7 +86,7 @@ def list_apt_packages():
         packages = []
         for line in lines:
             parts = line.replace("'", '').split('\t')
-            if len(parts) >= 3:
+            if len(parts) >= 5:
                 size_kb = int(parts[2])
                 size_mb = size_kb / 1024
                 size_str = f'{size_mb:.2f} MB'
@@ -96,6 +96,8 @@ def list_apt_packages():
                         'version': parts[1],
                         'size': size_str,
                         'source': 'apt',
+                        'section': parts[3] or '',
+                        'priority': parts[4] or '',
                     }
                 )
         return packages
@@ -176,5 +178,22 @@ def get_installed_snap_packages_set() -> set:
         )
         lines = result.stdout.strip().split('\n')[1:]
         return {line.split()[0] for line in lines}
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return set()
+
+
+def get_manual_apt_packages_set() -> set:
+    """Returns a set of manually installed apt packages."""
+    try:
+        env = dict(os.environ, LC_ALL='C')
+        result = subprocess.run(
+            ['apt-mark', 'showmanual'],
+            capture_output=True,
+            text=True,
+            check=True,
+            env=env,
+        )
+        packages = {pkg.strip() for pkg in result.stdout.splitlines() if pkg.strip()}
+        return packages
     except (subprocess.CalledProcessError, FileNotFoundError):
         return set()
