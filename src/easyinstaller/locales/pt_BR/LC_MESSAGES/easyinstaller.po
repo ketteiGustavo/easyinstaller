@@ -733,17 +733,25 @@ msgid ""
 msgstr ""
 "[red]Erro:[/red] Chave de configuração \"[cyan]{key}[/cyan]\" não encontrada."
 
-#: src/easyinstaller/cli/config.py:42
+#: src/easyinstaller/cli/config.py:37
 msgid "Configuration"
 msgstr "Configuração"
 
-#: src/easyinstaller/cli/config.py:46
+#: src/easyinstaller/cli/config.py:41
 msgid "Key"
 msgstr "Chave"
 
-#: src/easyinstaller/cli/config.py:47
+#: src/easyinstaller/cli/config.py:42
 msgid "Value"
 msgstr "Valor"
+
+#: src/easyinstaller/cli/config.py:52
+msgid "Configuration key to display."
+msgstr "Chave de configuração para exibir."
+
+#: src/easyinstaller/cli/config.py:61
+msgid "[cyan]{key}[/cyan]: {value}"
+msgstr "[cyan]{key}[/cyan]: {value}"
 
 #: src/easyinstaller/cli/config.py:58
 msgid "Configuration key to update."
@@ -756,3 +764,43 @@ msgstr "Novo valor a ser atribuído à chave de configuração."
 #: src/easyinstaller/cli/config.py:69
 msgid "[bold green]Updated configuration:[/bold green] {key} = {value}"
 msgstr "[bold green]Configuração atualizada:[/bold green] {key} = {value}"
+
+#: src/easyinstaller/cli/config.py:89
+msgid "Optional language code to set without prompting."
+msgstr "Código de idioma opcional para definir sem prompt."
+
+#: src/easyinstaller/cli/config.py:107
+msgid ""
+"[red]Questionary is not installed.[/red] Install it with `pip install "
+"questionary` or run `ei config set language <code>` (codes: {codes})."
+msgstr ""
+"[red]Questionary não está instalado.[/red] Instale com `pip install "
+"questionary` ou execute `ei config set language <code>` (códigos: {codes})."
+
+#: src/easyinstaller/cli/config.py:116
+msgid "Select the interface language:"
+msgstr "Selecione o idioma da interface:"
+
+#: src/easyinstaller/cli/config.py:122
+msgid "[yellow]No language selected. Configuration unchanged.[/yellow]"
+msgstr "[yellow]Nenhum idioma selecionado. Configuração mantida.[/yellow]"
+
+#: src/easyinstaller/cli/config.py:128
+msgid ""
+"[red]Error:[/red] Language \"[yellow]{value}[/yellow]\" is not supported. "
+"Available: {codes}"
+msgstr ""
+"[red]Erro:[/red] Idioma \"[yellow]{value}[/yellow]\" não é suportado. "
+"Disponível: {codes}"
+
+#: src/easyinstaller/cli/config.py:136
+msgid "[bold green]Language updated to[/bold green] {language}."
+msgstr "[bold green]Idioma atualizado para[/bold green] {language}."
+
+#: src/easyinstaller/cli/config.py:140
+msgid ""
+"[blue]Reopen EasyInstaller commands to see every message in the selected "
+"language.[/blue]"
+msgstr ""
+"[blue]Reabra os comandos do EasyInstaller para ver todas as mensagens no "
+"idioma selecionado.[/blue]"
