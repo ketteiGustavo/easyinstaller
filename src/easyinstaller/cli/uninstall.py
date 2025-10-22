@@ -9,7 +9,7 @@ from easyinstaller.i18n.i18n import _
 app = typer.Typer(
     name='uninstall',
     help=_('Uninstalls the easyinstaller (ei) application from the system.'),
-    no_args_is_help=True,
+    no_args_is_help=False,
 )
 console = Console()
 
