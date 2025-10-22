@@ -112,7 +112,7 @@ jobs:
 
               poetry --version
               echo "$APP_VERSION" > src/easyinstaller/VERSION
-              poetry install --no-interaction --no-root --only main
+              poetry install --no-interaction --only main
 
               # i18n
               echo "Compiling translations..."
@@ -128,6 +128,7 @@ jobs:
                 --standalone \
                 --assume-yes-for-downloads \
                 --jobs=$(nproc) \
+                --include-package=easyinstaller \
                 --include-module=typer \
                 --include-module=rich \
                 --include-module=click \
@@ -244,7 +245,7 @@ jobs:
 
               poetry --version
               echo "$APP_VERSION" > src/easyinstaller/VERSION
-              poetry install --no-interaction --no-root --only main
+              poetry install --no-interaction --only main
 
               # ccache mais efetivo (comprime e aumenta o limite)
               ccache --set-config=max_size=2G || true
@@ -264,6 +265,7 @@ jobs:
                 --standalone \
                 --assume-yes-for-downloads \
                 --jobs=$(nproc) \
+                --include-package=easyinstaller \
                 --include-module=typer \
                 --include-module=rich \
                 --include-module=click \
