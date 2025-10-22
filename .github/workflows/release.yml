@@ -3,6 +3,8 @@ name: Create Release and Build Portable Binaries
 on:
   workflow_dispatch: {}
   push:
+    branches:
+      - main
     tags:
       - "v*.*.*"
 
@@ -14,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  # diretorios de cache no runner (host)
+  # diretórios de cache no runner (host)
   PIP_CACHE: ~/.cache/pip
   POETRY_CACHE: ~/.cache/pypoetry
   NUITKA_CACHE: ~/.cache/Nuitka
@@ -68,7 +70,7 @@ jobs:
         env:
           APP_VERSION: ${{ steps.tag.outputs.version }}
         run: |
-          # Volumes nomeados para APT (evita "Permission denied" em /var/lib/apt/lists)
+          # Volumes APT
           docker volume create aptlists >/dev/null
           docker volume create aptcache >/dev/null
 
@@ -76,10 +78,10 @@ jobs:
           PIP_CACHE_HOST="$HOME/.cache/pip"
           POETRY_CACHE_HOST="$HOME/.cache/pypoetry"
           NUITKA_CACHE_HOST="$HOME/.cache/Nuitka"
-          CCACHE_HOST="$HOME/.ccache
+          CCACHE_HOST="$HOME/.ccache"
 
           # Garante que os caches existem no host
-          mkdir -p "$PIP_CACHE_HOST" "$POETRY_CACHE_HOST" "$NUITKA_CACHE_HOST" "$CCACHE_HOST
+          mkdir -p "$PIP_CACHE_HOST" "$POETRY_CACHE_HOST" "$NUITKA_CACHE_HOST" "$CCACHE_HOST"
 
           docker run --rm \
             -v "${GITHUB_WORKSPACE}":/app \
@@ -91,6 +93,7 @@ jobs:
             -v "$CCACHE_HOST":/root/.ccache \
             -w /app \
             -e APP_VERSION \
+            -e CCACHE_DIR=/root/.ccache \
             python:3.13-bullseye \
             /bin/bash -lc '
               set -euo pipefail
@@ -111,7 +114,7 @@ jobs:
               echo "$APP_VERSION" > src/easyinstaller/VERSION
               poetry install --no-interaction --no-root --only main
 
-              # Compile translations
+              # i18n
               echo "Compiling translations..."
               mkdir -p src/easyinstaller/locales/pt_BR/LC_MESSAGES
               msgfmt src/easyinstaller/locales/pt_BR/LC_MESSAGES/easyinstaller.po -o src/easyinstaller/locales/pt_BR/LC_MESSAGES/easyinstaller.mo
@@ -192,7 +195,7 @@ jobs:
         env:
           APP_VERSION: ${{ steps.tag.outputs.version }}
         run: |
-          # Volumes nomeados para APK (evita "Unable to lock database: Permission denied")
+          # Volumes APK
           docker volume create apklib >/dev/null
           docker volume create apkcache >/dev/null
 
@@ -232,7 +235,7 @@ jobs:
               echo "$APP_VERSION" > src/easyinstaller/VERSION
               poetry install --no-interaction --no-root --only main
 
-              # Compile translations
+              # i18n
               echo "Compiling translations..."
               mkdir -p src/easyinstaller/locales/pt_BR/LC_MESSAGES
               msgfmt src/easyinstaller/locales/pt_BR/LC_MESSAGES/easyinstaller.po -o src/easyinstaller/locales/pt_BR/LC_MESSAGES/easyinstaller.mo
@@ -302,10 +305,9 @@ jobs:
                 apt-get install -y --no-install-recommends \
                   libstdc++6 libgcc-s1 libzstd1 ca-certificates || true
               elif command -v dnf >/dev/null 2>&1; then
-                dnf -y install libstdc++ ca-certificates || true
+                dnf -y install libstdc++ libzstd ca-certificates || true
               elif command -v pacman >/dev/null 2>&1; then
-                # Em Arch, às vezes reinstala e retorna 1; não deixe isso quebrar o step.
-                pacman -Sy --noconfirm --needed gcc-libs ca-certificates || true
+                pacman -Sy --noconfirm --needed gcc-libs zstd ca-certificates || true
               fi
 
               # Diagnóstico leve (não falhar se ldd apontar algo)
@@ -317,9 +319,8 @@ jobs:
                 || ./ei-linux-glibc2.31-amd64 --help >/dev/null 2>&1 \
                 || ./ei-linux-glibc2.31-amd64 >/dev/null 2>&1 \
                 || true
-
-              # se chegou até aqui, considera o smoke ok
-              exit 0
+                # se chegou até aqui, considera o smoke ok
+                exit 0
             '
 
   release:
@@ -343,8 +344,22 @@ jobs:
 
       - name: Copy LICENSE and CHANGELOG.md to dist
         run: |
-          cp LICENSE dist/
-          cp CHANGELOG.md dist/
+          cp LICENSE dist/ || true
+          cp CHANGELOG.md dist/ || true
+
+      - name: Add optional release files (uninstall & man)
+        run: |
+          mkdir -p dist
+          [ -f scripts/uninstall.sh ] && cp scripts/uninstall.sh dist/uninstall.sh || true
+          [ -f man/ei.1 ] && cp man/ei.1 dist/ei.1 || true
+
+      - name: Generate checksums
+        run: |
+          cd dist
+          for f in ei-linux-*; do
+            [ -f "$f" ] || continue
+            sha256sum "$f" > "$f.sha256"
+          done
 
       - name: Create Release
         uses: softprops/action-gh-release@v2

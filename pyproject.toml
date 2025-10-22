@@ -16,6 +16,7 @@ dependencies = [
     "isort (>=7.0.0,<8.0.0)",
     "pexpect (>=4.9.0,<5.0.0)",
     "nuitka (>=2.8.3,<3.0.0)",
+    "pytest (>=8.4.2,<9.0.0)",
 ]
 
 [tool.poetry]

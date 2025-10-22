@@ -1,125 +1,149 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Exit immediately if a command exits with a non-zero status.
-set -e
+# --- Constantes ---
+PROJECT_NAME="easyinstaller"
+BINARY_BASENAME="ei"
+GITHUB_REPO="ketteiGustavo/easyinstaller"
 
-# --- Variables ---
-readonly PROJECT_NAME="easyinstaller"
-readonly BINARY_NAME="ei"
-readonly GITHUB_REPO="ketteiGustavo/easyinstaller"
-readonly INSTALL_DIR="/usr/local/bin"
-readonly MAN_DIR="/usr/share/man/man1"
-readonly DATA_DIR="/usr/local/share/easyinstaller"
+INSTALL_DIR="/usr/local/bin"
+MAN_DIR="/usr/share/man/man1"
+DATA_DIR="/usr/local/share/easyinstaller"
 
-# --- Functions ---
+# --- Mensagens ---
+info()  { printf "\033[1;34m[INFO]\033[0m %s\n" "$*"; }
+warn()  { printf "\033[1;33m[WARN]\033[0m %s\n" "$*"; }
+error() { printf "\033[1;31m[ERROR]\033[0m %s\n" "$*" >&2; exit 1; }
 
-info() {
-    echo -e "\033[1;34m[INFO]\033[0m $1"
+# --- Privs ---
+require_root() {
+  if [ "$(id -u)" -ne 0 ]; then
+    info "This script requires superuser privileges. Rerunning with sudo..."
+    exec sudo -E "$0" "$@"
+  fi
 }
 
-error() {
-    echo -e "\033[1;31m[ERROR]\033[0m $1" >&2
-    exit 1
+# --- Descobertas do sistema ---
+detect_arch() {
+  case "$(uname -m)" in
+    x86_64|amd64) echo "amd64" ;;
+    aarch64|arm64) echo "arm64" ;;
+    *) error "Arquitetura não suportada: $(uname -m)";;
+  esac
 }
 
-check_privileges() {
-    if [ "$(id -u)" -ne 0 ]; then
-        info "This script requires superuser privileges. Rerunning with sudo..."
-        # Re-execute the script with sudo, passing all original arguments
-        exec sudo "$0" "$@"
+detect_libc() {
+  if ldd --version 2>&1 | grep -qi musl; then
+    echo "musl"
+  else
+    echo "glibc"
+  fi
+}
+
+latest_tag() {
+  # usa redirect do GitHub sem precisar de jq
+  local url tag
+  url="$(curl -fsSLI -o /dev/null -w '%{redirect_url}' "https://github.com/${GITHUB_REPO}/releases/latest")" || true
+  tag="${url##*/}"
+  [ -n "${tag:-}" ] || error "Não consegui descobrir a última release."
+  echo "$tag"
+}
+
+# --- Download com fallback e verificação ---
+dl() {
+  # dl <url> <dest>
+  curl -fL --retry 3 --retry-delay 2 --progress-bar "$1" -o "$2"
+}
+
+verify_sha256_if_exists() {
+  # verify_sha256_if_exists <file> <url.sha256>
+  local file="$1" sha_url="$2"
+  local tmp_sha; tmp_sha="$(mktemp)"
+  if curl -fsI "$sha_url" >/dev/null 2>&1; then
+    info "Baixando checksum: $sha_url"
+    dl "$sha_url" "$tmp_sha"
+    if ! (cd "$(dirname "$file")" && sha256sum -c <(sed "s| .*|  $(basename "$file")|")) < "$tmp_sha"; then
+      rm -f "$tmp_sha"
+      error "Checksum SHA256 não confere para $(basename "$file")."
     fi
+    rm -f "$tmp_sha"
+  else
+    warn "Checksum não encontrado; seguindo sem verificar."
+  fi
 }
 
-get_distro() {
-    if [ -f /etc/os-release ]; then
-        # freedesktop.org and systemd
-        . /etc/os-release
-        DISTRO=$ID
-    else
-        # Fallback for older systems
-        DISTRO=$(uname -s)
-    fi
-    echo "$DISTRO"
-}
-
-# --- Main Script ---
+cleanups=()
+cleanup() { for f in "${cleanups[@]:-}"; do [ -e "$f" ] && rm -f "$f"; done; }
+trap cleanup EXIT
 
 main() {
-    check_privileges
+  require_root "$@"
 
-    info "Starting installation of $PROJECT_NAME..."
+  info "Instalando ${PROJECT_NAME}…"
+  local ARCH LIBC TAG
+  ARCH="$(detect_arch)"
+  LIBC="$(detect_libc)"
+  TAG="$(latest_tag)"
 
-    local distro
-    distro=$(get_distro)
-    info "Detected distribution: $distro"
+  info "Detectado: arch=${ARCH}, libc=${LIBC}, tag=${TAG}"
 
-    # --- Download Assets ---
-    info "Downloading assets from release $latest_version..."
-
-    # Base URL for all assets
-    local base_download_url="https://github.com/${GITHUB_REPO}/releases/download/${latest_version}"
-
-    # Download binary
-    local temp_binary=$(mktemp)
-    local binary_url="${base_download_url}/ei-linux-glibc2.31-amd64" # Using glibc version as default
-    info "Downloading binary from $binary_url..."
-    if ! curl -L --progress-bar "$binary_url" -o "$temp_binary"; then
-        error "Failed to download the binary. Please check the URL and your connection."
+  # Decide qual binário
+  local asset bin_url sha_url
+  if [ "$LIBC" = "musl" ]; then
+    asset="${BINARY_BASENAME}-linux-musl-${ARCH}"
+  else
+    # seu build atual só publica glibc2.31 para amd64; para arm64 ajuste quando habilitar
+    if [ "$ARCH" != "amd64" ]; then
+      warn "Artefato glibc arm64 ainda não publicado; tentando musl arm64."
+      asset="${BINARY_BASENAME}-linux-musl-${ARCH}"
+    else
+      asset="${BINARY_BASENAME}-linux-glibc2.31-${ARCH}"
     fi
+  fi
 
-    # Download uninstall script
-    local temp_uninstall=$(mktemp)
-    local uninstall_url="${base_download_url}/uninstall.sh"
-    info "Downloading uninstall script from $uninstall_url..."
-    if ! curl -L --progress-bar "$uninstall_url" -o "$temp_uninstall"; then
-        error "Failed to download the uninstall script."
+  local base="https://github.com/${GITHUB_REPO}/releases/download/${TAG}"
+  bin_url="${base}/${asset}"
+  sha_url="${bin_url}.sha256"
+
+  # Baixa binário
+  local tmp_bin; tmp_bin="$(mktemp)"; cleanups+=("$tmp_bin")
+  info "Baixando binário: $bin_url"
+  dl "$bin_url" "$tmp_bin" || error "Não consegui baixar o binário ${asset}."
+  chmod +x "$tmp_bin"
+
+  # Verifica SHA256 se existir
+  verify_sha256_if_exists "$tmp_bin" "$sha_url"
+
+  # Arquivos opcionais
+  mkdir -p "$DATA_DIR" "$MAN_DIR"
+
+  for name in uninstall.sh ei.1 LICENSE; do
+    src_url="${base}/${name}"
+    tmp="$(mktemp)"; cleanups+=("$tmp")
+    if curl -fsI "$src_url" >/dev/null 2>&1; then
+      info "Baixando $name"
+      dl "$src_url" "$tmp"
+      case "$name" in
+        uninstall.sh) install -m 755 "$tmp" "$DATA_DIR/uninstall.sh" ;;
+        ei.1)         install -m 644 "$tmp" "$MAN_DIR/ei.1" && gzip -f "$MAN_DIR/ei.1" ;;
+        LICENSE)      install -m 644 "$tmp" "$DATA_DIR/LICENSE" ;;
+      esac
+    else
+      warn "$name não anexado na release (ok, seguindo)."
     fi
+  done
 
-    # Download man page
-    local temp_manpage=$(mktemp)
-    local manpage_url="${base_download_url}/ei.1"
-    info "Downloading man page from $manpage_url..."
-    if ! curl -L --progress-bar "$manpage_url" -o "$temp_manpage"; then
-        error "Failed to download the man page."
-    fi
+  # Instala binário
+  install -m 755 "$tmp_bin" "${INSTALL_DIR}/${BINARY_BASENAME}"
 
-    # Download license
-    local temp_license=$(mktemp)
-    local license_url="${base_download_url}/LICENSE"
-    info "Downloading license from $license_url..."
-    if ! curl -L --progress-bar "$license_url" -o "$temp_license"; then
-        error "Failed to download the license file."
-    fi
+  # Atualiza base de man se existir
+  if command -v mandb >/dev/null 2>&1; then
+    info "Atualizando man-db…"
+    mandb >/dev/null 2>&1 || true
+  fi
 
-    # --- Installation ---
-    info "Installing binary to $INSTALL_DIR/$BINARY_NAME..."
-    install -m 755 "$temp_binary" "$INSTALL_DIR/$BINARY_NAME"
-    rm "$temp_binary"
-
-    info "Installing uninstall script to $DATA_DIR/uninstall.sh..."
-    mkdir -p "$DATA_DIR"
-    install -m 755 "$temp_uninstall" "$DATA_DIR/uninstall.sh"
-    rm "$temp_uninstall"
-
-    info "Installing license to $DATA_DIR/LICENSE..."
-    install -m 644 "$temp_license" "$DATA_DIR/LICENSE"
-    rm "$temp_license"
-
-    info "Installing man page to $MAN_DIR/ei.1..."
-    mkdir -p "$MAN_DIR"
-    install -m 644 "$temp_manpage" "$MAN_DIR/ei.1"
-    gzip -f "$MAN_DIR/ei.1"
-    rm "$temp_manpage"
-
-    info "Updating man-db..."
-    if command -v mandb &> /dev/null; then
-        mandb
-    fi
-
-    info "\033[1;32m✔ Installation successful!\033[0m"
-    info "Run '$BINARY_NAME --help' to get started."
-    info "To uninstall, run: sudo $DATA_DIR/uninstall.sh"
+  info "✔ Instalação concluída! Execute: ${BINARY_BASENAME} --help"
+  info "Desinstalar: sudo ${DATA_DIR}/uninstall.sh (se baixado)"
 }
 
-# Run the main function
-main
+main "$@"

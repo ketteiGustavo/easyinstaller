@@ -3,9 +3,10 @@ blue==0.9.1
 certifi==2025.10.5
 charset-normalizer==3.4.3
 click==8.3.0
--e git+ssh://git@github.com/ketteiGustavo/easyinstaller.git@029213c279677b5283f9b8885e47a825a4134cae#egg=easyinstaller
+-e git+ssh://git@github.com/ketteiGustavo/easyinstaller.git@38ad0e6a5904287fa4cecfe0a01eba97e212ec6d#egg=easyinstaller
 flake8==4.0.1
 idna==3.10
+iniconfig==2.3.0
 isort==7.0.0
 loguru==0.7.3
 markdown-it-py==4.0.0
@@ -14,14 +15,17 @@ mdurl==0.1.2
 mypy_extensions==1.1.0
 Nuitka==2.8.3
 ordered-set==4.1.0
+packaging==25.0
 pathspec==0.12.1
 pexpect==4.9.0
 platformdirs==4.5.0
+pluggy==1.6.0
 prompt_toolkit==3.0.52
 ptyprocess==0.7.0
 pycodestyle==2.8.0
 pyflakes==2.4.0
 Pygments==2.19.2
+pytest==8.4.2
 python-dotenv==1.1.1
 questionary==2.1.1
 requests==2.32.5
