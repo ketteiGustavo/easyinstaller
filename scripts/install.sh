@@ -41,11 +41,20 @@ detect_libc() {
 }
 
 latest_tag() {
-  # usa redirect do GitHub sem precisar de jq
-  local url tag
-  url="$(curl -fsSLI -o /dev/null -w '%{redirect_url}' "https://github.com/${GITHUB_REPO}/releases/latest")" || true
-  tag="${url##*/}"
-  [ -n "${tag:-}" ] || error "Não consegui descobrir a última release."
+  # Busca o header "location" do redirect para a última release.
+  # É mais robusto que usar -w %{redirect_url} que pode falhar em alguns ambientes.
+  local location_header
+  location_header=$(curl -sLI "https://github.com/${GITHUB_REPO}/releases/latest" | grep -i "^location:")
+
+  if [ -z "$location_header" ]; then
+    error "Não consegui descobrir a última release (cabeçalho 'location' não encontrado)."
+  fi
+
+  # Extrai a tag da URL. Ex: location: .../tag/v0.1.0 -> v0.1.0
+  local tag
+  tag=$(echo "$location_header" | sed -n 's|.*/tag/\(v[0-9.]*\)|\1|p')
+
+  [ -n "${tag:-}" ] || error "Não consegui extrair a tag da URL: ${location_header}"
   echo "$tag"
 }
 

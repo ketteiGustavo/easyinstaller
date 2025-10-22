@@ -342,10 +342,12 @@ jobs:
           name: linux-musl
           path: dist
 
-      - name: Copy LICENSE and CHANGELOG.md to dist
+      - name: Prepare release assets
         run: |
           cp LICENSE dist/ || true
           cp CHANGELOG.md dist/ || true
+          cp scripts/uninstall.sh dist/ || true
+          cp docs/man/ei.1 dist/ || true
 
       - name: Add optional release files (uninstall & man)
         run: |
