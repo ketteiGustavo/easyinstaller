@@ -8,7 +8,7 @@ from easyinstaller.i18n.i18n import _
 app = typer.Typer(
     name='license',
     help=_('Displays the easyinstaller license information.'),
-    no_args_is_help=True,
+    no_args_is_help=False,
 )
 console = Console()
 

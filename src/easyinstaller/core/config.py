@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+from easyinstaller.i18n.i18n import _
 
 # Define the XDG standard config directory for the application
 CONFIG_DIR = Path.home() / '.config' / 'easyinstaller'
@@ -8,12 +9,48 @@ CONFIG_FILE = CONFIG_DIR / 'config.json'
 
 # Define default paths using the standard user data location
 DATA_DIR = Path.home() / '.local' / 'share' / 'easyinstaller'
-DEFAULT_PATHS = {
-    'export_dir': str(DATA_DIR / 'exports'),
-    'history_file': str(DATA_DIR / 'history.jsonl'),
-    'log_dir': str(DATA_DIR / 'logs'),
-    'language': 'en_US',
-}
+EXPORT_DIR = DATA_DIR / 'exports'
+LOG_DIR = DATA_DIR / 'logs'
+HIST_FILE = DATA_DIR / 'history.jsonl'
+
+
+def default_paths() -> dict:
+    """
+    Returns a dictionary of default paths for configuration.
+    """
+    return {
+        'export_path': str(EXPORT_DIR),
+        'log_path': str(LOG_DIR),
+        'history_file': str(HIST_FILE),
+        'language': 'en_US',
+    }
+
+def _ensure_dirs(cfg: dict) -> None:
+    """
+    Ensures that the necessary directories exist.
+    """
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    for path in [EXPORT_DIR, LOG_DIR]:
+        path.mkdir(parents=True, exist_ok=True)
+
+    Path(cfg['history_file']).parent.mkdir(parents=True, exist_ok=True)
+
+def create_default_config() -> dict:
+    """
+    Creates the default configuration directory and file.
+    """
+    cfg = default_paths()
+    _ensure_dirs(cfg)
+
+    try:
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump(cfg, f, indent=2)
+    except IOError as e:
+        # If we can't write to the config file, return defaults in memory
+        print(_(f"Warning: could not write config file: {e}"))
+
+    return cfg
 
 
 def get_config() -> dict:
@@ -23,51 +60,42 @@ def get_config() -> dict:
     """
     if not CONFIG_FILE.exists():
         return create_default_config()
+    else:
+        try:
+            with open(CONFIG_FILE, 'r') as f:
+                cfg = json.load(f)
+        except (json.JSONDecodeError, IOError):
+            # If file is corrupted or unreadable, create a new default one
+            cfg = create_default_config()
 
-    try:
-        with open(CONFIG_FILE, 'r') as f:
-            config = json.load(f)
-            # Ensure all default keys are present
-            for key, value in DEFAULT_PATHS.items():
-                config.setdefault(key, value)
-            return config
-    except (json.JSONDecodeError, IOError):
-        # If file is corrupted or unreadable, create a new default one
-        return create_default_config()
+        for key, value in default_paths().items():
+            cfg.setdefault(key, value)
+
+        _ensure_dirs(cfg)
+    return cfg
 
 
-def create_default_config() -> dict:
-    """
-    Creates the default configuration directory and file.
-    """
-    try:
-        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-        # Create parent directories for default paths as well
-        for path_str in DEFAULT_PATHS.values():
-            Path(path_str).parent.mkdir(parents=True, exist_ok=True)
-
-        with open(CONFIG_FILE, 'w') as f:
-            json.dump(DEFAULT_PATHS, f, indent=2)
-        return DEFAULT_PATHS
-    except IOError:
-        # If we can't write to the config file, return defaults in memory
-        return DEFAULT_PATHS
 
 
 def set_config_value(key: str, value: str):
     """
     Updates a specific configuration key with a new value and saves it.
     """
-    current_config = get_config()
-    current_config[key] = value
+    cfg = get_config()
+    cfg[key] = value
+    try:
+        _ensure_dirs(cfg)
+    except IOError as e:
+        print(_(f'Error saving configuration: {e}'))
+        pass
+
     try:
         with open(CONFIG_FILE, 'w') as f:
-            json.dump(current_config, f, indent=2)
-        # Reload the global config object
+            json.dump(cfg, f, indent=2)
         global config
-        config = current_config
+        config = cfg
     except IOError as e:
-        print(f'Error saving configuration: {e}')
+        print(_(f'Error saving configuration: {e}'))
 
 
 # Load config once at import time

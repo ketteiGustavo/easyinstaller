@@ -14,7 +14,7 @@ app = typer.Typer(
     help=_(
         'Displays the history of packages installed and removed by easyinstaller.'
     ),
-    no_args_is_help=True,
+    no_args_is_help=False,
 )
 console = Console()
 

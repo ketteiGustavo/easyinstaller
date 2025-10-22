@@ -74,7 +74,7 @@ def export_packages(
         os_release = get_os_release()
         system_info = {
             'distro': os_release.get('NAME', _('Unknown')),
-            'version': os.get('VERSION_ID', _('Unknown')),
+            'version': os_release.get('VERSION_ID', _('Unknown')),
             'user': os.getlogin(),
             'architecture': platform.machine(),
             'native_manager': get_native_manager_type(),
