@@ -1,7 +1,10 @@
+from typing import Dict
+
 import typer
 from rich.console import Console
 
 from easyinstaller.i18n.i18n import _
+from typer._completion_shared import Shells, get_completion_script
 
 app = typer.Typer(
     name='completion',
@@ -9,6 +12,38 @@ app = typer.Typer(
     no_args_is_help=True,
 )
 console = Console()
+
+SUPPORTED_SHELLS = {shell.value for shell in Shells}
+SHELL_ALIASES: Dict[str, str] = {
+    'powershell': 'pwsh',
+}
+
+
+def _normalize_shell(shell: str) -> str:
+    normalized = shell.lower()
+    normalized = SHELL_ALIASES.get(normalized, normalized)
+
+    if normalized not in SUPPORTED_SHELLS:
+        supported = ', '.join(sorted(SUPPORTED_SHELLS))
+        raise typer.BadParameter(
+            _(
+                'Shell "[yellow]{shell}[/yellow]" is not supported. Supported shells: {supported}'
+            ).format(shell=shell, supported=supported)
+        )
+
+    return normalized
+
+
+def _build_completion_script(shell: str) -> str:
+    normalized = _normalize_shell(shell)
+    from easyinstaller.main import app as main_app
+
+    prog_name = main_app.info.name or 'ei'
+    complete_var = f'_{prog_name.replace("-", "_").upper()}_COMPLETE'
+
+    return get_completion_script(
+        prog_name=prog_name, complete_var=complete_var, shell=normalized
+    )
 
 
 @app.command(name='install')
@@ -21,25 +56,19 @@ def install_completion(
     """
     Installs shell completion for the specified shell.
     """
-    script = typer.main.get_completion_script(app, shell)
-    if not script:
-        console.print(
-            _(
-                '[red]Error:[/red] Could not generate completion script for shell: [yellow]{shell}[/yellow]'
-            ).format(shell=shell)
-        )
-        raise typer.Exit(1)
+    normalized_shell = _normalize_shell(shell)
+    script = _build_completion_script(normalized_shell)
 
     console.print(
         _(
             "To install completion for [bold green]{shell}[/bold green], add the following to your shell's config file (e.g., ~/.bashrc, ~/.zshrc):\n"
-        ).format(shell=shell)
+        ).format(shell=normalized_shell)
     )
-    console.print(f'```bash\n{script}\n```\n')
+    console.print(f'```{normalized_shell}\n{script}\n```\n')
     console.print(
         _(
             'Then, reload your shell (e.g., `source ~/.bashrc` or `exec {shell}`).'
-        ).format(shell=shell)
+        ).format(shell=normalized_shell)
     )
 
 
@@ -53,14 +82,8 @@ def show_completion(
     """
     Shows the shell completion script for the specified shell.
     """
-    script = typer.main.get_completion_script(app, shell)
-    if not script:
-        console.print(
-            _(
-                '[red]Error:[/red] Could not generate completion script for shell: [yellow]{shell}[/yellow]'
-            ).format(shell=shell)
-        )
-        raise typer.Exit(1)
+    normalized_shell = _normalize_shell(shell)
+    script = _build_completion_script(normalized_shell)
     console.print(script)
 
 

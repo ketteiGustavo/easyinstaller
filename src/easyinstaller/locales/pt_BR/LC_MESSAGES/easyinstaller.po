@@ -702,3 +702,49 @@ msgstr "[bold cyan]Executando (sem pexpect):[/] {cmd}"
 #, python-brace-format
 msgid "Running: {cmd_name}..."
 msgstr "Executando: {cmd_name}..."
+
+#: src/easyinstaller/cli/completion.py:30
+msgid ""
+"Shell \"[yellow]{shell}[/yellow]\" is not supported. Supported shells: "
+"{supported}"
+msgstr ""
+"Shell \"[yellow]{shell}[/yellow]\" não é suportado. Shells suportados: "
+"{supported}"
+
+#: src/easyinstaller/cli/config.py:12
+msgid "Manages EasyInstaller configuration."
+msgstr "Gerencia a configuração do EasyInstaller."
+
+#: src/easyinstaller/cli/config.py:21
+msgid "Optional configuration key to display."
+msgstr "Chave de configuração opcional para exibir."
+
+#: src/easyinstaller/cli/config.py:32
+msgid ""
+"[red]Error:[/red] Configuration key \"[cyan]{key}[/cyan]\" not found."
+msgstr ""
+"[red]Erro:[/red] Chave de configuração \"[cyan]{key}[/cyan]\" não encontrada."
+
+#: src/easyinstaller/cli/config.py:42
+msgid "Configuration"
+msgstr "Configuração"
+
+#: src/easyinstaller/cli/config.py:46
+msgid "Key"
+msgstr "Chave"
+
+#: src/easyinstaller/cli/config.py:47
+msgid "Value"
+msgstr "Valor"
+
+#: src/easyinstaller/cli/config.py:58
+msgid "Configuration key to update."
+msgstr "Chave de configuração para atualizar."
+
+#: src/easyinstaller/cli/config.py:61
+msgid "New value to assign to the configuration key."
+msgstr "Novo valor a ser atribuído à chave de configuração."
+
+#: src/easyinstaller/cli/config.py:69
+msgid "[bold green]Updated configuration:[/bold green] {key} = {value}"
+msgstr "[bold green]Configuração atualizada:[/bold green] {key} = {value}"

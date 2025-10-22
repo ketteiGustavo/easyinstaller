@@ -746,3 +746,57 @@ msgstr "[bold cyan]Running (no pexpect):[/] {cmd}"
 #, python-brace-format
 msgid "Running: {cmd_name}..."
 msgstr "Running: {cmd_name}..."
+
+#: src/easyinstaller/main.py:24
+msgid ""
+"[bold green]EasyInstaller[/bold green]: A universal package manager for "
+"Linux, simplifying apt, flatpak, and snap."
+msgstr ""
+"[bold green]EasyInstaller[/bold green]: A universal package manager for "
+"Linux, simplifying apt, flatpak, and snap."
+
+#: src/easyinstaller/cli/completion.py:30
+msgid ""
+"Shell \"[yellow]{shell}[/yellow]\" is not supported. Supported shells: "
+"{supported}"
+msgstr ""
+"Shell \"[yellow]{shell}[/yellow]\" is not supported. Supported shells: "
+"{supported}"
+
+#: src/easyinstaller/cli/config.py:12
+msgid "Manages EasyInstaller configuration."
+msgstr "Manages EasyInstaller configuration."
+
+#: src/easyinstaller/cli/config.py:21
+msgid "Optional configuration key to display."
+msgstr "Optional configuration key to display."
+
+#: src/easyinstaller/cli/config.py:32
+msgid ""
+"[red]Error:[/red] Configuration key \"[cyan]{key}[/cyan]\" not found."
+msgstr ""
+"[red]Error:[/red] Configuration key \"[cyan]{key}[/cyan]\" not found."
+
+#: src/easyinstaller/cli/config.py:42
+msgid "Configuration"
+msgstr "Configuration"
+
+#: src/easyinstaller/cli/config.py:46
+msgid "Key"
+msgstr "Key"
+
+#: src/easyinstaller/cli/config.py:47
+msgid "Value"
+msgstr "Value"
+
+#: src/easyinstaller/cli/config.py:58
+msgid "Configuration key to update."
+msgstr "Configuration key to update."
+
+#: src/easyinstaller/cli/config.py:61
+msgid "New value to assign to the configuration key."
+msgstr "New value to assign to the configuration key."
+
+#: src/easyinstaller/cli/config.py:69
+msgid "[bold green]Updated configuration:[/bold green] {key} = {value}"
+msgstr "[bold green]Updated configuration:[/bold green] {key} = {value}"
