@@ -44,7 +44,7 @@ apply_language_preference() {
   if [ ! -x "$ei_binary" ]; then
     warn "Não foi possível configurar o idioma automaticamente (binário não encontrado)."
     return
-  }
+  fi
 
   local target_user="${SUDO_USER:-$(logname 2>/dev/null || echo root)}"
   local cmd=( "$ei_binary" config set language "$lang" )
