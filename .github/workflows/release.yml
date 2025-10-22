@@ -162,6 +162,13 @@ jobs:
         run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       # ===== CACHES (HOST) =====
+      - name: Cache APK packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/apk
+          key: apk-${{ runner.os }}-v1
+          restore-keys: |
+            apk-${{ runner.os }}-
       - name: Cache pip
         uses: actions/cache@v4
         with:
@@ -195,22 +202,19 @@ jobs:
         env:
           APP_VERSION: ${{ steps.tag.outputs.version }}
         run: |
-          # Volumes APK
-          docker volume create apklib >/dev/null
-          docker volume create apkcache >/dev/null
 
           # Caminhos ABSOLUTOS de cache no host
+          APK_CACHE_HOST="$HOME/.cache/apk"
           PIP_CACHE_HOST="$HOME/.cache/pip"
           POETRY_CACHE_HOST="$HOME/.cache/pypoetry"
           NUITKA_CACHE_HOST="$HOME/.cache/Nuitka"
           CCACHE_HOST="$HOME/.ccache"
 
-          mkdir -p "$PIP_CACHE_HOST" "$POETRY_CACHE_HOST" "$NUITKA_CACHE_HOST" "$CCACHE_HOST"
+          mkdir -p "$APK_CACHE_HOST" "$PIP_CACHE_HOST" "$POETRY_CACHE_HOST" "$NUITKA_CACHE_HOST" "$CCACHE_HOST"
 
           docker run --rm \
             -v "${GITHUB_WORKSPACE}":/app \
-            -v apklib:/var/lib/apk \
-            -v apkcache:/etc/apk/cache \
+            -v "$APK_CACHE_HOST":/etc/apk/cache \
             -v "$PIP_CACHE_HOST":/root/.cache/pip \
             -v "$POETRY_CACHE_HOST":/root/.cache/pypoetry \
             -v "$NUITKA_CACHE_HOST":/root/.cache/Nuitka \
@@ -218,22 +222,33 @@ jobs:
             -w /app \
             -e APP_VERSION \
             -e CCACHE_DIR=/root/.ccache \
+            -e PIP_CACHE_DIR=/root/.cache/pip \
+            -e PIP_DISABLE_PIP_VERSION_CHECK=1 \
+            -e POETRY_VIRTUALENVS_IN_PROJECT=false \
             python:3.13-alpine \
             /bin/sh -lc '
               set -euo pipefail
               umask 022
 
-              mkdir -p /var/lib/apk /etc/apk/cache
+              mkdir -p /root/.cache/pip /root/.cache/pypoetry /root/.cache/Nuitka /root/.ccache /etc/apk/cache
+              chmod -R 777 /root/.cache /root/.ccache /etc/apk/cache || true
+
               apk update || true
-              apk add --no-cache build-base patchelf bash ca-certificates gettext
+              apk add --update --cache-dir /etc/apk/cache \
+                build-base patchelf bash ca-certificates gettext
 
               python -V
-              pip install --upgrade pip
-              PIP_DEFAULT_TIMEOUT=60 pip install "poetry>=1.8" "nuitka==2.8.3" ordered-set zstandard
+              pip install --root-user-action=ignore --upgrade pip
+              PIP_DEFAULT_TIMEOUT=60 pip install --root-user-action=ignore \
+                "poetry>=1.8" "nuitka==2.8.3" ordered-set zstandard
 
               poetry --version
               echo "$APP_VERSION" > src/easyinstaller/VERSION
               poetry install --no-interaction --no-root --only main
+
+              # ccache mais efetivo (comprime e aumenta o limite)
+              ccache --set-config=max_size=2G || true
+              ccache --set-config=compress=true || true
 
               # i18n
               echo "Compiling translations..."
