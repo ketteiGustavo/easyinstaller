@@ -134,6 +134,54 @@ msgstr "Installing [green]{name}[/green] from [cyan]{source}[/cyan]..."
 msgid "[red]An error occurred while installing {name}:[/red] {error}"
 msgstr "[red]An error occurred while installing {name}:[/red] {error}"
 
+#: src/easyinstaller/cli/changelog.py:18
+msgid "Shows recent commits grouped by conventional commit type."
+msgstr "Shows recent commits grouped by conventional commit type."
+
+#: src/easyinstaller/cli/changelog.py:78
+#, python-brace-format
+msgid ""
+"[red]Error:[/red] Unable to read repository information. Is this a Git "
+"repository?\n"
+"{error}"
+msgstr ""
+"[red]Error:[/red] Unable to read repository information. Is this a Git "
+"repository?\n"
+"{error}"
+
+#: src/easyinstaller/cli/changelog.py:287
+msgid "Output format: text (default), md, or raw."
+msgstr "Output format: text (default), md, or raw."
+
+#: src/easyinstaller/cli/changelog.py:293
+msgid "Use a specific tag as the upper bound instead of the latest tag."
+msgstr "Use a specific tag as the upper bound instead of the latest tag."
+
+#: src/easyinstaller/cli/changelog.py:298
+msgid "Optional starting reference for the changelog range."
+msgstr "Optional starting reference for the changelog range."
+
+#: src/easyinstaller/cli/changelog.py:303
+msgid ""
+"Optional ending reference for the changelog range. Defaults to the provided "
+"tag or HEAD."
+msgstr ""
+"Optional ending reference for the changelog range. Defaults to the provided "
+"tag or HEAD."
+
+#: src/easyinstaller/cli/changelog.py:316
+#, python-brace-format
+msgid "[red]Error:[/red] Invalid format \"{value}\". Choose from: {choices}."
+msgstr "[red]Error:[/red] Invalid format \"{value}\". Choose from: {choices}."
+
+#: src/easyinstaller/cli/changelog.py:213 src/easyinstaller/cli/changelog.py:248
+msgid "Changelog"
+msgstr "Changelog"
+
+#: src/easyinstaller/cli/changelog.py:347
+msgid "[yellow]No commits found for the selected range.[/yellow]"
+msgstr "[yellow]No commits found for the selected range.[/yellow]"
+
 #: src/easyinstaller/cli/hist.py:14
 msgid ""
 "Displays the history of packages installed and removed by easyinstaller."

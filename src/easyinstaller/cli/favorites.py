@@ -123,6 +123,7 @@ def edit_favorites(
         return
 
     questionary = _require_questionary()
+    from easyinstaller.styles.styles import custom_style
 
     normalized_managers = _normalize_manager_options(managers)
     packages = unified_lister(normalized_managers)
@@ -151,7 +152,9 @@ def edit_favorites(
         )
 
     answer = questionary.checkbox(
-        _('Select your favorite applications:'), choices=choices
+        _('Select your favorite applications:'),
+        choices=choices,
+        style=custom_style,
     ).ask()
 
     if answer is None:

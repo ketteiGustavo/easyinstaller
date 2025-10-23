@@ -12,6 +12,7 @@ from easyinstaller.cli import config as config_app
 from easyinstaller.cli import export as export_app
 from easyinstaller.cli import favorites as favorites_app
 from easyinstaller.cli import flatpak as flatpak_app
+from easyinstaller.cli import changelog as changelog_app
 from easyinstaller.cli import hist as hist_app
 from easyinstaller.cli import import_app
 from easyinstaller.cli import license as license_app
@@ -47,6 +48,8 @@ app.add_typer(snap_app.app, name='snap')
 app.add_typer(snap_app.app, name='sp')
 app.add_typer(license_app.app, name='license')
 app.add_typer(completion_app.app, name='completion')
+app.add_typer(changelog_app.app, name='changelog')
+app.add_typer(changelog_app.app, name='news')
 app.add_typer(update_app.app, name='update')
 
 

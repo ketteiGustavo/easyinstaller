@@ -92,9 +92,11 @@ def build_system_info() -> Dict:
 
 
 def default_output_path(mode: str) -> str:
-    today_str = datetime.date.today().isoformat()
     export_dir = config.get('export_dir', '.')
     prefix = DEFAULT_FILE_PREFIX.get(mode, 'export')
+    if mode == 'favorites':
+        return os.path.join(export_dir, f'{prefix}.json')
+    today_str = datetime.date.today().isoformat()
     return os.path.join(export_dir, f'{prefix}-{today_str}.json')
 
 
