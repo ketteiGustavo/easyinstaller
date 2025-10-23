@@ -2,9 +2,9 @@ from typing import Dict
 
 import typer
 from rich.console import Console
+from typer._completion_shared import Shells, get_completion_script
 
 from easyinstaller.i18n.i18n import _
-from typer._completion_shared import Shells, get_completion_script
 
 app = typer.Typer(
     name='completion',

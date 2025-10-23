@@ -193,7 +193,9 @@ def get_manual_apt_packages_set() -> set:
             check=True,
             env=env,
         )
-        packages = {pkg.strip() for pkg in result.stdout.splitlines() if pkg.strip()}
+        packages = {
+            pkg.strip() for pkg in result.stdout.splitlines() if pkg.strip()
+        }
         return packages
     except (subprocess.CalledProcessError, FileNotFoundError):
         return set()

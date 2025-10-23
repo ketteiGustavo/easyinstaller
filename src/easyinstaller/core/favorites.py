@@ -16,7 +16,9 @@ DEFAULT_FAVORITES: Dict[str, List[Dict]] = {
 
 def load_favorites() -> Dict[str, List[Dict]]:
     if not FAVORITES_FILE.exists():
-        return {manager: items[:] for manager, items in DEFAULT_FAVORITES.items()}
+        return {
+            manager: items[:] for manager, items in DEFAULT_FAVORITES.items()
+        }
     try:
         data = json.loads(FAVORITES_FILE.read_text(encoding='utf-8'))
         favorites: Dict[str, List[Dict]] = {
@@ -24,13 +26,19 @@ def load_favorites() -> Dict[str, List[Dict]]:
         }
         return favorites
     except (json.JSONDecodeError, OSError):
-        return {manager: items[:] for manager, items in DEFAULT_FAVORITES.items()}
+        return {
+            manager: items[:] for manager, items in DEFAULT_FAVORITES.items()
+        }
 
 
 def save_favorites(favorites: Dict[str, List[Dict]]) -> None:
     FAVORITES_FILE.parent.mkdir(parents=True, exist_ok=True)
-    data = {manager: favorites.get(manager, []) for manager in DEFAULT_FAVORITES}
-    FAVORITES_FILE.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding='utf-8')
+    data = {
+        manager: favorites.get(manager, []) for manager in DEFAULT_FAVORITES
+    }
+    FAVORITES_FILE.write_text(
+        json.dumps(data, indent=2, ensure_ascii=False), encoding='utf-8'
+    )
 
 
 def clear_favorites() -> None:

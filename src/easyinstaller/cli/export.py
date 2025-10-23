@@ -10,12 +10,12 @@ from rich.console import Console
 from easyinstaller.core.config import config
 from easyinstaller.core.distro_detector import get_native_manager_type
 from easyinstaller.core.favorites import favorites_count, load_favorites
+from easyinstaller.core.lister import unified_lister
 from easyinstaller.core.package_filters import (
     DEFAULT_MANAGERS,
     filter_user_app_packages,
     group_packages_by_manager,
 )
-from easyinstaller.core.lister import unified_lister
 from easyinstaller.i18n.i18n import _
 
 console = Console()
@@ -135,6 +135,7 @@ def perform_export(
         export_data = {
             'type': 'export_favorites',
             'date': datetime.date.today().isoformat(),
+            'system': build_system_info(),
             'packages': favorites,
         }
     else:
@@ -156,12 +157,11 @@ def perform_export(
                 for manager, entries in grouped.items()
             }
 
-            export_type = (
-                'export_apps' if mode == 'apps' else 'export_full'
-            )
+            export_type = 'export_apps' if mode == 'apps' else 'export_full'
             export_data = {
                 'type': export_type,
                 'date': datetime.date.today().isoformat(),
+                'system': build_system_info(),
                 'packages': packages_payload,
             }
 

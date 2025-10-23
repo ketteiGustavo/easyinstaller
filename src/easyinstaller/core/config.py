@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+
 from easyinstaller.i18n.i18n import _
 
 # Define the XDG standard config directory for the application
@@ -25,6 +26,7 @@ def default_paths() -> dict:
         'language': 'en_US',
     }
 
+
 def _ensure_dirs(cfg: dict) -> None:
     """
     Ensures that the necessary directories exist.
@@ -35,6 +37,7 @@ def _ensure_dirs(cfg: dict) -> None:
         path.mkdir(parents=True, exist_ok=True)
 
     Path(cfg['history_file']).parent.mkdir(parents=True, exist_ok=True)
+
 
 def create_default_config() -> dict:
     """
@@ -48,7 +51,7 @@ def create_default_config() -> dict:
             json.dump(cfg, f, indent=2)
     except IOError as e:
         # If we can't write to the config file, return defaults in memory
-        print(_(f"Warning: could not write config file: {e}"))
+        print(_(f'Warning: could not write config file: {e}'))
 
     return cfg
 
@@ -73,8 +76,6 @@ def get_config() -> dict:
 
         _ensure_dirs(cfg)
     return cfg
-
-
 
 
 def set_config_value(key: str, value: str):

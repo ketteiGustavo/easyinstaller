@@ -21,6 +21,7 @@ console = Console()
 GITHUB_REPO = 'ketteiGustavo/easyinstaller'
 DATA_DIR = '/usr/local/share/easyinstaller'
 
+
 def get_current_version() -> str:
     """
     Reads the current version from the bundled VERSION file.

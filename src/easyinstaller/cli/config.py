@@ -48,9 +48,7 @@ def show_config(ctx: typer.Context):
 
 @app.command('get')
 def get_config_value(
-    key: str = typer.Argument(
-        ..., help=_('Configuration key to display.')
-    )
+    key: str = typer.Argument(..., help=_('Configuration key to display.'))
 ):
     """
     Displays a single configuration value.
@@ -71,9 +69,7 @@ def get_config_value(
 
 @app.command('set')
 def set_config(
-    key: str = typer.Argument(
-        ..., help=_('Configuration key to update.')
-    ),
+    key: str = typer.Argument(..., help=_('Configuration key to update.')),
     value: str = typer.Argument(
         ..., help=_('New value to assign to the configuration key.')
     ),
@@ -83,9 +79,9 @@ def set_config(
     """
     set_config_value(key, value)
     console.print(
-        _('[bold green]Updated configuration:[/bold green] {key} = {value}').format(
-            key=key, value=value
-        )
+        _(
+            '[bold green]Updated configuration:[/bold green] {key} = {value}'
+        ).format(key=key, value=value)
     )
 
 
@@ -130,7 +126,9 @@ def configure_language(
 
         if answer is None:
             console.print(
-                _('[yellow]No language selected. Configuration unchanged.[/yellow]')
+                _(
+                    '[yellow]No language selected. Configuration unchanged.[/yellow]'
+                )
             )
             raise typer.Exit(0)
 

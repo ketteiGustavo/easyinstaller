@@ -14,12 +14,12 @@ from easyinstaller.core.favorites import (
     load_favorites,
     save_favorites,
 )
+from easyinstaller.core.lister import unified_lister
 from easyinstaller.core.package_filters import (
     DEFAULT_MANAGERS,
     filter_user_app_packages,
     group_packages_by_manager,
 )
-from easyinstaller.core.lister import unified_lister
 from easyinstaller.i18n.i18n import _
 
 console = Console()
@@ -114,7 +114,7 @@ def edit_favorites(
         '--manager',
         '-m',
         help=_('Limit selection to specific managers (apt, flatpak, snap).'),
-    )
+    ),
 ):
     """
     Launches the favorite application picker.
@@ -130,7 +130,9 @@ def edit_favorites(
 
     if not packages:
         console.print(
-            _('[yellow]No applications detected for the selected managers.[/yellow]')
+            _(
+                '[yellow]No applications detected for the selected managers.[/yellow]'
+            )
         )
         raise typer.Exit(0)
 
