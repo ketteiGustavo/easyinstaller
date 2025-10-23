@@ -14,7 +14,7 @@ from easyinstaller.i18n.i18n import _
 app = typer.Typer(
     name='update',
     help=_('Checks for and installs updates for easyinstaller.'),
-    no_args_is_help=True,
+    no_args_is_help=False,
 )
 console = Console()
 
