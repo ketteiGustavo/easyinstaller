@@ -10,3 +10,4 @@
 - :🐛: fix: correção de bug que não traduzia help (por: Luiz Gustavo em 22-10-2025 13:22)
 - :✨: feat: modo favorito adicionado ao projeto (por: Luiz Gustavo em 22-10-2025 14:05)
 - :🐛: fix: correção em instalador (por: Luiz Gustavo em 22-10-2025 14:21)
+- :🐛: fix: correção de bugs (por: Luiz Gustavo em 24-10-2025 08:18)

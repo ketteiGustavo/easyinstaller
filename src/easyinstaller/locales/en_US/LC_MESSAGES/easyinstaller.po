@@ -138,16 +138,21 @@ msgstr "[red]An error occurred while installing {name}:[/red] {error}"
 msgid "Shows recent commits grouped by conventional commit type."
 msgstr "Shows recent commits grouped by conventional commit type."
 
-#: src/easyinstaller/cli/changelog.py:78
-#, python-brace-format
-msgid ""
-"[red]Error:[/red] Unable to read repository information. Is this a Git "
-"repository?\n"
-"{error}"
-msgstr ""
-"[red]Error:[/red] Unable to read repository information. Is this a Git "
-"repository?\n"
-"{error}"
+#: src/easyinstaller/cli/changelog.py:150
+msgid "[red]Error:[/red] Unable to locate a CHANGELOG.md file. Run this command inside the project repository or download the release assets."
+msgstr "[red]Error:[/red] Unable to locate a CHANGELOG.md file. Run this command inside the project repository or download the release assets."
+
+#: src/easyinstaller/cli/changelog.py:156
+msgid "[yellow]No Git repository detected. Showing CHANGELOG.md contents instead.[/yellow]"
+msgstr "[yellow]No Git repository detected. Showing CHANGELOG.md contents instead.[/yellow]"
+
+#: src/easyinstaller/cli/changelog.py:160
+msgid "[yellow]Warning:[/yellow] Git-specific options were ignored while reading the bundled changelog."
+msgstr "[yellow]Warning:[/yellow] Git-specific options were ignored while reading the bundled changelog."
+
+#: src/easyinstaller/main.py:86
+msgid "Show EasyInstaller version and exit."
+msgstr "Show EasyInstaller version and exit."
 
 #: src/easyinstaller/cli/changelog.py:287
 msgid "Output format: text (default), md, or raw."

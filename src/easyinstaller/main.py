@@ -1,3 +1,6 @@
+import sys
+from pathlib import Path
+
 import typer
 
 from easyinstaller.core.config import config
@@ -42,10 +45,10 @@ app.add_typer(config_app.app, name='config')
 app.add_typer(favorites_app.app, name='favorites')
 app.add_typer(uninstall_app.app, name='uninstall')
 app.add_typer(apt_app.app, name='apt')
-app.add_typer(flatpak_app.app, name='fp')
 app.add_typer(flatpak_app.app, name='flatpak')
+app.add_typer(flatpak_app.app, name='fp', hidden=True)
 app.add_typer(snap_app.app, name='snap')
-app.add_typer(snap_app.app, name='sp')
+app.add_typer(snap_app.app, name='sp', hidden=True)
 app.add_typer(license_app.app, name='license')
 app.add_typer(completion_app.app, name='completion')
 app.add_typer(changelog_app.app, name='changelog')
@@ -53,12 +56,45 @@ app.add_typer(changelog_app.app, name='news')
 app.add_typer(update_app.app, name='update')
 
 
+def _resolve_version() -> str:
+    """Best-effort loader for the EasyInstaller version string."""
+    # Candidate VERSION files when running from source or bundled binary
+    possible_paths = [
+        Path(__file__).resolve().parent / 'VERSION',
+        Path(__file__).resolve().parent.parent / 'VERSION',
+        Path(sys.executable).resolve().parent / 'easyinstaller' / 'VERSION',
+        Path(sys.executable).resolve().parent / 'VERSION',
+    ]
+
+    for path in possible_paths:
+        if path.is_file():
+            try:
+                return path.read_text(encoding='utf-8').strip()
+            except OSError:
+                continue
+
+    return _('Unknown')
+
+
+def _version_callback(value: bool) -> None:
+    if value:
+        typer.echo(_resolve_version())
+        raise typer.Exit()
+
+
 @app.callback()
-def main():
-    """
-    A universal installation manager for Linux.
-    """
-    pass
+def main(
+    version: bool = typer.Option(
+        False,
+        '--version',
+        '-V',
+        callback=_version_callback,
+        is_eager=True,
+        help=_('Show EasyInstaller version and exit.'),
+    )
+):
+    """A universal installation manager for Linux."""
+    return
 
 
 if __name__ == '__main__':

@@ -2,12 +2,15 @@ from __future__ import annotations
 
 import re
 import subprocess
+import sys
 from collections import defaultdict
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
 import typer
 from rich.console import Console
+from rich.markdown import Markdown
 
 from easyinstaller.i18n.i18n import _
 
@@ -69,16 +72,11 @@ def _run_git(*args: str) -> str:
     return result.stdout.strip()
 
 
-def _ensure_git_repository() -> None:
+def _ensure_git_repository() -> Optional[str]:
     try:
-        _run_git('rev-parse', '--show-toplevel')
-    except GitError as error:
-        console.print(
-            _(
-                '[red]Error:[/red] Unable to read repository information. Is this a Git repository?\n{error}'
-            ).format(error=error)
-        )
-        raise typer.Exit(1)
+        return _run_git('rev-parse', '--show-toplevel')
+    except GitError:
+        return None
 
 
 def _latest_tag(ref: str = 'HEAD') -> Optional[str]:
@@ -109,6 +107,64 @@ def _repo_remote_url() -> Optional[str]:
     except GitError:
         return None
     return url[:-4] if url.endswith('.git') else url
+
+
+def _candidate_changelog_paths() -> List[Path]:
+    candidates: List[Path] = []
+
+    # Current working directory
+    candidates.append(Path.cwd() / 'CHANGELOG.md')
+
+    # Relative to this module (source tree scenario)
+    module_path = Path(__file__).resolve()
+    for parent in module_path.parents:
+        candidates.append(parent / 'CHANGELOG.md')
+
+    # Relative to the executable (frozen binary scenario)
+    exe_path = Path(sys.executable).resolve()
+    candidates.append(exe_path.parent / 'CHANGELOG.md')
+    candidates.append(exe_path.parent.parent / 'CHANGELOG.md')
+
+    seen: set[Path] = set()
+    ordered: List[Path] = []
+    for path in candidates:
+        if path not in seen:
+            seen.add(path)
+            ordered.append(path)
+    return ordered
+
+
+def _locate_changelog_file() -> Optional[Path]:
+    for path in _candidate_changelog_paths():
+        if path.is_file():
+            return path
+    return None
+
+
+def _render_changelog_file(fmt: str, options_used: bool = False) -> None:
+    changelog_path = _locate_changelog_file()
+
+    if changelog_path is None:
+        console.print(
+            _(
+                '[red]Error:[/red] Unable to locate a CHANGELOG.md file. Run this command inside the project repository or download the release assets.'
+            )
+        )
+        raise typer.Exit(1)
+
+    console.print(
+        _('[yellow]No Git repository detected. Showing CHANGELOG.md contents instead.[/yellow]')
+    )
+    if options_used:
+        console.print(
+            _('[yellow]Warning:[/yellow] Git-specific options were ignored while reading the bundled changelog.')
+        )
+
+    content = changelog_path.read_text(encoding='utf-8')
+    if fmt == 'text':
+        console.print(Markdown(content))
+    else:
+        typer.echo(content)
 
 
 def _collect_commits(revision: str) -> List[CommitEntry]:
@@ -319,7 +375,12 @@ def changelog(
         )
         raise typer.Exit(1)
 
-    _ensure_git_repository()
+    repo_root = _ensure_git_repository()
+
+    if repo_root is None:
+        options_used = any([tag, since, until])
+        _render_changelog_file(fmt, options_used=options_used)
+        return
 
     upper_ref = until or tag or _latest_tag() or 'HEAD'
     lower_ref: Optional[str] = since
