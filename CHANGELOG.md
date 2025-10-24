@@ -12,3 +12,4 @@
 - :🐛: fix: correção em instalador (por: Luiz Gustavo em 22-10-2025 14:21)
 - :🐛: fix: correção de bugs (por: Luiz Gustavo em 24-10-2025 08:18)
 - :📦: build: versao atualizada (por: Luiz Gustavo em 24-10-2025 08:22)
+- :🐛: fix: correção em versão (por: Luiz Gustavo em 24-10-2025 08:24)
