@@ -86,20 +86,29 @@ def list_apt_packages():
         packages = []
         for line in lines:
             parts = line.replace("'", '').split('\t')
-            if len(parts) >= 5:
+            if len(parts) < 3:
+                continue
+
+            try:
                 size_kb = int(parts[2])
-                size_mb = size_kb / 1024
-                size_str = f'{size_mb:.2f} MB'
-                packages.append(
-                    {
-                        'name': parts[0],
-                        'version': parts[1],
-                        'size': size_str,
-                        'source': 'apt',
-                        'section': parts[3] or '',
-                        'priority': parts[4] or '',
-                    }
-                )
+            except ValueError:
+                continue
+
+            size_mb = size_kb / 1024
+            size_str = f'{size_mb:.2f} MB'
+            entry = {
+                'name': parts[0],
+                'version': parts[1],
+                'size': size_str,
+                'source': 'apt',
+            }
+
+            if len(parts) > 3 and parts[3]:
+                entry['section'] = parts[3]
+            if len(parts) > 4 and parts[4]:
+                entry['priority'] = parts[4]
+
+            packages.append(entry)
         return packages
     except (subprocess.CalledProcessError, FileNotFoundError, ValueError):
         return []

@@ -32,7 +32,6 @@ def rm(
         '--yes',
         '-y',
         help=_('Automatically answer "yes" to confirmation prompts.'),
-        is_flag=True,  # Keep for documentation purposes
     ),
 ):
     """

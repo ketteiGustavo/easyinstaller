@@ -92,7 +92,6 @@ def main(
         '--version',
         '-V',
         help=_('Show EasyInstaller version and exit.'),
-        is_flag=True,
     ),
 ):
     """A universal installation manager for Linux."""
