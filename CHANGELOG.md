@@ -20,3 +20,4 @@
 - :🐛: fix: correção em bug que não removia pacotes flatpak (por: Luiz Gustavo em 24-10-2025 19:21)
 - :📦: build: versão atualizada (por: Luiz Gustavo em 24-10-2025 19:22)
 - :🐛: fix: correção de bug de remoção e pytest (por: Luiz Gustavo em 24-10-2025 19:44)
+- :🔧: chore: versão atualizada (por: Luiz Gustavo em 24-10-2025 19:45)
