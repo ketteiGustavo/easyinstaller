@@ -16,3 +16,4 @@
 - :🐛: fix: correção em bug que impedia atualizar (por: Luiz Gustavo em 24-10-2025 08:49)
 - :🔧: chore: ajuste no instalador (por: Luiz Gustavo em 24-10-2025 08:57)
 - :✨: feat: melhoria no fluxo do update e novos recursos (por: Luiz Gustavo em 24-10-2025 10:35)
+- :📦: build: nova versão (por: Luiz Gustavo em 24-10-2025 10:37)
