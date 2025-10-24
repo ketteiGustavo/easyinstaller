@@ -120,6 +120,7 @@ def configure_language(
             for code, _ in LANGUAGE_CHOICES
         ]
         from easyinstaller.styles.styles import custom_style
+
         answer = questionary.select(
             _('Select the interface language:'),
             choices=choices,

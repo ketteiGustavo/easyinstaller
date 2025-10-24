@@ -1,8 +1,11 @@
-import os
+from __future__ import annotations
+
 import platform
-import shutil
 import subprocess
 import sys
+import tempfile
+from pathlib import Path
+from typing import Dict
 
 import requests
 import typer
@@ -20,463 +23,54 @@ console = Console()
 
 GITHUB_REPO = 'ketteiGustavo/easyinstaller'
 DATA_DIR = '/usr/local/share/easyinstaller'
+CHANGELOG_FILE = 'CHANGELOG.md'
+LICENSE_FILE = 'LICENSE'
 
 
 def get_current_version() -> str:
-    """
-    Reads the current version from the bundled VERSION file.
-    This file is created during the Nuitka build process.
-    """
-    try:
-        exe_dir = os.path.dirname(sys.executable)
-        version_path_in_bundle = os.path.join(
-            exe_dir, 'easyinstaller', 'VERSION'
-        )
-
-        if os.path.exists(version_path_in_bundle):
-            with open(version_path_in_bundle, 'r') as f:
-                return f.read().strip()
-        else:
-            dev_version_path = os.path.join(
-                os.path.dirname(os.path.abspath(__file__)), '..', 'VERSION'
-            )
-            if os.path.exists(dev_version_path):
-                with open(dev_version_path, 'r') as f:
-                    return f.read().strip()
-
-        console.print('[red]Error: Could not find VERSION file.[/red]')
-        raise typer.Exit(1)
-    except Exception as e:
-        console.print(f'[red]Error reading current version:[/red] {e}')
-        raise typer.Exit(1)
-
-
-def get_latest_release_info() -> dict:
-    """
-    Fetches the latest release information from GitHub.
-    """
-    api_url = f'https://api.github.com/repos/{GITHUB_REPO}/releases/latest'
-    try:
-        response = requests.get(api_url)
-        response.raise_for_status()  # Raise an exception for HTTP errors
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        console.print(
-            f'[red]Error fetching latest release from GitHub:[/red] {e}'
-        )
-        raise typer.Exit(1)
-
-
-def compare_versions(current_v: str, latest_v: str) -> bool:
-    """
-    Compares two version strings (e.g., 'v0.1.0' and 'v0.1.1').
-    Returns True if latest_v is newer than current_v.
-    """
-    # Remove 'v' prefix if present
-    current_v = current_v.lstrip('v')
-    latest_v = latest_v.lstrip('v')
-
-    current_parts = list(map(int, current_v.split('.')))
-    latest_parts = list(map(int, latest_v.split('.')))
-
-    # Pad with zeros if one version has fewer parts (e.g., 1.0 vs 1.0.0)
-    max_len = max(len(current_parts), len(latest_parts))
-    current_parts.extend([0] * (max_len - len(current_parts)))
-    latest_parts.extend([0] * (max_len - len(latest_parts)))
-
-    return latest_parts > current_parts
-
-
-def get_system_arch() -> str:
-    """
-    Detects the system architecture (glibc or musl).
-    """
-    # Check for musl libc
-    if 'musl' in platform.libc_ver()[0].lower():
-        return 'musl'
-    return 'glibc'
-
-
-def download_asset(url: str, dest_path: str):
-    """
-    Downloads a file from a URL to a destination path.
-    """
-    console.print(f'Downloading [cyan]{os.path.basename(dest_path)}[/cyan]...')
-    try:
-        with requests.get(url, stream=True) as r:
-            r.raise_for_status()
-            with open(dest_path, 'wb') as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    f.write(chunk)
-    except requests.exceptions.RequestException as e:
-        console.print(
-            f'[red]Error downloading {os.path.basename(dest_path)}:[/red] {e}'
-        )
-        raise typer.Exit(1)
-
-
-def replace_binary(downloaded_binary_path: str):
-    """
-    Replaces the currently running executable with the new one.
-    Requires sudo.
-    """
-    current_exe_path = (
-        sys.executable
-    )  # This should be the path to the running ei binary
-    console.print(
-        f'Replacing [cyan]{current_exe_path}[/cyan] with new version...'
-    )
-
-    try:
-        # Use sudo to replace the binary
-        subprocess.run(
-            ['sudo', 'mv', downloaded_binary_path, current_exe_path],
-            check=True,
-        )
-        subprocess.run(
-            ['sudo', 'chmod', '+x', current_exe_path],
-            check=True,
-        )
-        console.print('[green]✔ Binary replaced successfully.[/green]')
-    except subprocess.CalledProcessError as e:
-        console.print(f'[red]Error replacing binary:[/red] {e}')
-        console.print(
-            '[red]Please try running the update command with sudo: `sudo ei update`[/red]'
-        )
-        raise typer.Exit(1)
-
-
-@app.callback(invoke_without_command=True)
-def update():
-    """
-    Checks for and installs updates for easyinstaller.
-    """
-    console.print('[bold green]Checking for updates...[/bold green]')
-
-    current_version = get_current_version()
-    console.print(
-        f'Current easyinstaller version: [yellow]{current_version}[/yellow]'
-    )
-
-    latest_release = get_latest_release_info()
-    latest_version = latest_release['tag_name']
-    console.print(f'Latest available version: [green]{latest_version}[/green]')
-
-    if not compare_versions(current_version, latest_version):
-        console.print(
-            '[bold blue]You are already running the latest version.[/bold blue]'
-        )
-        raise typer.Exit()
-
-    console.print('[bold yellow]A new version is available![/bold yellow]')
-    if not typer.confirm('Do you want to update now?'):
-        raise typer.Abort()
-
-    system_arch = get_system_arch()
-    console.print(f'Detected system architecture: [cyan]{system_arch}[/cyan]')
-
-    binary_asset_name = (
-        f'ei-linux-musl-amd64'
-        if system_arch == 'musl'
-        else f'ei-linux-glibc2.31-amd64'
-    )
-    changelog_asset_name = 'CHANGELOG.md'
-    license_asset_name = 'LICENSE'
-
-    download_urls = {}
-    for asset in latest_release['assets']:
-        if asset['name'] == binary_asset_name:
-            download_urls['binary'] = asset['browser_download_url']
-        elif asset['name'] == changelog_asset_name:
-            download_urls['changelog'] = asset['browser_download_url']
-        elif asset['name'] == license_asset_name:
-            download_urls['license'] = asset['browser_download_url']
-
-    if 'binary' not in download_urls:
-        console.print(
-            f'[red]Error: Could not find binary asset for {system_arch} in latest release.[/red]'
-        )
-        raise typer.Exit(1)
-
-    # Create a temporary directory for downloads
-    import tempfile
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        downloaded_binary_path = os.path.join(tmpdir, binary_asset_name)
-        downloaded_changelog_path = os.path.join(tmpdir, changelog_asset_name)
-        downloaded_license_path = os.path.join(tmpdir, license_asset_name)
-
-        download_asset(download_urls['binary'], downloaded_binary_path)
-        download_asset(
-            download_urls.get('changelog', ''), downloaded_changelog_path
-        )
-        download_asset(
-            download_urls.get('license', ''), downloaded_license_path
-        )
-
-        replace_binary(downloaded_binary_path)
-
-        # Store changelog and license in DATA_DIR
-        os.makedirs(DATA_DIR, exist_ok=True)
-        if os.path.exists(downloaded_changelog_path):
-            shutil.copy(
-                downloaded_changelog_path,
-                os.path.join(DATA_DIR, changelog_asset_name),
-            )
-        if os.path.exists(downloaded_license_path):
-            shutil.copy(
-                downloaded_license_path,
-                os.path.join(DATA_DIR, license_asset_name),
-            )
-
-    console.print(
-        '[bold green]✔ easyinstaller updated successfully![/bold green]'
-    )
-
-    # Display changelog
-    if os.path.exists(os.path.join(DATA_DIR, changelog_asset_name)):
-        console.print("\n[bold blue]What's New:[/bold blue]")
-        with open(os.path.join(DATA_DIR, changelog_asset_name), 'r') as f:
-            changelog_content = f.read()
-        console.print(Markdown(changelog_content))
-
-    console.print(
-        'Please restart your shell or terminal for changes to take full effect.'
-    )
-
-
-def get_latest_release_info() -> dict:
-    """
-    Fetches the latest release information from GitHub.
-    """
-    api_url = f'https://api.github.com/repos/{GITHUB_REPO}/releases/latest'
-    try:
-        response = requests.get(api_url)
-        response.raise_for_status()  # Raise an exception for HTTP errors
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        console.print(
-            _(
-                '[red]Error fetching latest release from GitHub:[/red] {error}'
-            ).format(error=e)
-        )
-        raise typer.Exit(1)
-
-
-def compare_versions(current_v: str, latest_v: str) -> bool:
-    """
-    Compares two version strings (e.g., 'v0.1.0' and 'v0.1.1').
-    Returns True if latest_v is newer than current_v.
-    """
-    # Remove 'v' prefix if present
-    current_v = current_v.lstrip('v')
-    latest_v = latest_v.lstrip('v')
-
-    current_parts = list(map(int, current_v.split('.')))
-    latest_parts = list(map(int, latest_v.split('.')))
-
-    # Pad with zeros if one version has fewer parts (e.g., 1.0 vs 1.0.0)
-    max_len = max(len(current_parts), len(latest_parts))
-    current_parts.extend([0] * (max_len - len(current_parts)))
-    latest_parts.extend([0] * (max_len - len(latest_parts)))
-
-    return latest_parts > current_parts
-
-
-def get_system_arch() -> str:
-    """
-    Detects the system architecture (glibc or musl).
-    """
-    # Check for musl libc
-    if 'musl' in platform.libc_ver()[0].lower():
-        return 'musl'
-    return 'glibc'
-
-
-def download_asset(url: str, dest_path: str):
-    """
-    Downloads a file from a URL to a destination path.
-    """
-    console.print(f'Downloading [cyan]{os.path.basename(dest_path)}[/cyan]...')
-    try:
-        with requests.get(url, stream=True) as r:
-            r.raise_for_status()
-            with open(dest_path, 'wb') as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    f.write(chunk)
-    except requests.exceptions.RequestException as e:
-        console.print(
-            _('[red]Error downloading {filename}:[/red] {error}').format(
-                filename=os.path.basename(dest_path), error=e
-            )
-        )
-        raise typer.Exit(1)
-
-
-def replace_binary(downloaded_binary_path: str):
-    """
-    Replaces the currently running executable with the new one.
-    Requires sudo.
-    """
-    current_exe_path = (
-        sys.executable
-    )  # This should be the path to the running ei binary
-    console.print(
-        f'Replacing [cyan]{current_exe_path}[/cyan] with new version...'
-    )
-
-    try:
-        # Use sudo to replace the binary
-        subprocess.run(
-            ['sudo', 'mv', downloaded_binary_path, current_exe_path],
-            check=True,
-        )
-        subprocess.run(
-            ['sudo', 'chmod', '+x', current_exe_path],
-            check=True,
-        )
-        console.print('[green]✔ Binary replaced successfully.[/green]')
-    except subprocess.CalledProcessError as e:
-        console.print(f'[red]Error replacing binary:[/red] {e}')
-        console.print(
-            '[red]Please try running the update command with sudo: `sudo ei update`[/red]'
-        )
-        raise typer.Exit(1)
-
-
-@app.callback(invoke_without_command=True)
-def update():
-    """
-    Checks for and installs updates for easyinstaller.
-    """
-    console.print('[bold green]Checking for updates...[/bold green]')
-
-    current_version = get_current_version()
-    console.print(
-        f'Current easyinstaller version: [yellow]{current_version}[/yellow]'
-    )
-
-    latest_release = get_latest_release_info()
-    latest_version = latest_release['tag_name']
-    console.print(f'Latest available version: [green]{latest_version}[/green]')
-
-    if not compare_versions(current_version, latest_version):
-        console.print(
-            '[bold blue]You are already running the latest version.[/bold blue]'
-        )
-        raise typer.Exit()
-
-    console.print('[bold yellow]A new version is available![/bold yellow]')
-    if not typer.confirm('Do you want to update now?'):
-        raise typer.Abort()
-
-    system_arch = get_system_arch()
-    console.print(f'Detected system architecture: [cyan]{system_arch}[/cyan]')
-
-    binary_asset_name = (
-        f'ei-linux-musl-amd64'
-        if system_arch == 'musl'
-        else f'ei-linux-glibc2.31-amd64'
-    )
-    changelog_asset_name = 'CHANGELOG.md'
-    license_asset_name = 'LICENSE'
-
-    download_urls = {}
-    for asset in latest_release['assets']:
-        if asset['name'] == binary_asset_name:
-            download_urls['binary'] = asset['browser_download_url']
-        elif asset['name'] == changelog_asset_name:
-            download_urls['changelog'] = asset['browser_download_url']
-        elif asset['name'] == license_asset_name:
-            download_urls['license'] = asset['browser_download_url']
-
-    if 'binary' not in download_urls:
-        console.print(
-            f'[red]Error: Could not find binary asset for {system_arch} in latest release.[/red]'
-        )
-        raise typer.Exit(1)
-
-    # Create a temporary directory for downloads
-    import tempfile
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        downloaded_binary_path = os.path.join(tmpdir, binary_asset_name)
-        downloaded_changelog_path = os.path.join(tmpdir, changelog_asset_name)
-        downloaded_license_path = os.path.join(tmpdir, license_asset_name)
-
-        download_asset(download_urls['binary'], downloaded_binary_path)
-        download_asset(
-            download_urls.get('changelog', ''), downloaded_changelog_path
-        )
-        download_asset(
-            download_urls.get('license', ''), downloaded_license_path
-        )
-
-        replace_binary(downloaded_binary_path)
-
-        # Store changelog and license in DATA_DIR
-        os.makedirs(DATA_DIR, exist_ok=True)
-        if os.path.exists(downloaded_changelog_path):
-            shutil.copy(
-                downloaded_changelog_path,
-                os.path.join(DATA_DIR, changelog_asset_name),
-            )
-        if os.path.exists(downloaded_license_path):
-            shutil.copy(
-                downloaded_license_path,
-                os.path.join(DATA_DIR, license_asset_name),
-            )
-
-    console.print(
-        '[bold green]✔ easyinstaller updated successfully![/bold green]'
-    )
-
-    # Display changelog
-    if os.path.exists(os.path.join(DATA_DIR, changelog_asset_name)):
-        console.print("\n[bold blue]What's New:[/bold blue]")
-        with open(os.path.join(DATA_DIR, changelog_asset_name), 'r') as f:
-            changelog_content = f.read()
-        console.print(Markdown(changelog_content))
-
-    console.print(
-        _(
-            'Please restart your shell or terminal for changes to take full effect.'
-        )
-    )
+    """Reads the current version string from a bundled VERSION file."""
+    search_paths = [
+        Path(sys.executable).resolve().parent / 'easyinstaller' / 'VERSION',
+        Path(__file__).resolve().parent.parent / 'VERSION',
+    ]
+
+    for path in search_paths:
+        if path.is_file():
+            try:
+                return path.read_text(encoding='utf-8').strip()
+            except OSError as error:
+                console.print(
+                    _(
+                        '[red]Error reading current version:[/red] {error}'
+                    ).format(error=error)
+                )
+                raise typer.Exit(1)
+
+    console.print(_('[red]Error: Could not find VERSION file.[/red]'))
     raise typer.Exit(1)
 
 
-def get_latest_release_info() -> dict:
-    """
-    Fetches the latest release information from GitHub.
-    """
+def get_latest_release_info() -> Dict:
+    """Fetches the latest release information from GitHub."""
     api_url = f'https://api.github.com/repos/{GITHUB_REPO}/releases/latest'
     try:
-        response = requests.get(api_url)
-        response.raise_for_status()  # Raise an exception for HTTP errors
+        response = requests.get(api_url, timeout=30)
+        response.raise_for_status()
         return response.json()
-    except requests.exceptions.RequestException as e:
+    except requests.exceptions.RequestException as error:
         console.print(
             _(
                 '[red]Error fetching latest release from GitHub:[/red] {error}'
-            ).format(error=e)
+            ).format(error=error)
         )
         raise typer.Exit(1)
 
 
 def compare_versions(current_v: str, latest_v: str) -> bool:
-    """
-    Compares two version strings (e.g., 'v0.1.0' and 'v0.1.1').
-    Returns True if latest_v is newer than current_v.
-    """
-    # Remove 'v' prefix if present
-    current_v = current_v.lstrip('v')
-    latest_v = latest_v.lstrip('v')
+    """Returns True if the latest version is newer than the current one."""
+    current_parts = list(map(int, current_v.lstrip('v').split('.')))
+    latest_parts = list(map(int, latest_v.lstrip('v').split('.')))
 
-    current_parts = list(map(int, current_v.split('.')))
-    latest_parts = list(map(int, latest_v.split('.')))
-
-    # Pad with zeros if one version has fewer parts (e.g., 1.0 vs 1.0.0)
     max_len = max(len(current_parts), len(latest_parts))
     current_parts.extend([0] * (max_len - len(current_parts)))
     latest_parts.extend([0] * (max_len - len(latest_parts)))
@@ -485,67 +79,60 @@ def compare_versions(current_v: str, latest_v: str) -> bool:
 
 
 def get_system_arch() -> str:
-    """
-    Detects the system architecture (glibc or musl).
-    """
-    # Check for musl libc
+    """Detects the libc variant of the current system."""
     if 'musl' in platform.libc_ver()[0].lower():
         return 'musl'
     return 'glibc'
 
 
-def download_asset(url: str, dest_path: str):
-    """
-    Downloads a file from a URL to a destination path.
-    """
+def download_asset(url: str, dest_path: Path) -> None:
+    """Downloads an asset to the given path when a URL is provided."""
+    if not url:
+        return
+
     console.print(
-        _('Downloading [cyan]{file_name}[/cyan]...').format(
-            file_name=os.path.basename(dest_path)
+        _('Downloading [cyan]{filename}[/cyan]...').format(
+            filename=dest_path.name
         )
     )
     try:
-        with requests.get(url, stream=True) as r:
-            r.raise_for_status()
-            with open(dest_path, 'wb') as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    f.write(chunk)
-    except requests.exceptions.RequestException as e:
+        with requests.get(url, stream=True, timeout=60) as response:
+            response.raise_for_status()
+            with dest_path.open('wb') as handle:
+                for chunk in response.iter_content(chunk_size=8192):
+                    handle.write(chunk)
+    except requests.exceptions.RequestException as error:
         console.print(
-            _('[red]Error downloading {file_name}:[/red] {error}').format(
-                file_name=os.path.basename(dest_path), error=e
+            _('[red]Error downloading {filename}:[/red] {error}').format(
+                filename=dest_path.name,
+                error=error,
             )
         )
         raise typer.Exit(1)
 
 
-def replace_binary(downloaded_binary_path: str):
-    """
-    Replaces the currently running executable with the new one.
-    Requires sudo.
-    """
-    current_exe_path = (
-        sys.executable
-    )  # This should be the path to the running ei binary
+def replace_binary(downloaded_binary_path: Path) -> None:
+    """Moves the downloaded binary into place using sudo."""
+    current_exe_path = Path(sys.executable)
     console.print(
-        _(
-            'Replacing [cyan]{current_exe_path}[/cyan] with new version...'
-        ).format(current_exe_path=current_exe_path)
+        _('Replacing [cyan]{path}[/cyan] with new version...').format(
+            path=current_exe_path
+        )
     )
 
     try:
-        # Use sudo to replace the binary
         subprocess.run(
-            ['sudo', 'mv', downloaded_binary_path, current_exe_path],
+            ['sudo', 'mv', str(downloaded_binary_path), str(current_exe_path)],
             check=True,
         )
         subprocess.run(
-            ['sudo', 'chmod', '+x', current_exe_path],
+            ['sudo', 'chmod', '+x', str(current_exe_path)],
             check=True,
         )
-        console.print(_('[green]✔ Binary replaced successfully.[/green]'))
-    except subprocess.CalledProcessError as e:
+        console.print('[green]✔ Binary replaced successfully.[/green]')
+    except subprocess.CalledProcessError as error:
         console.print(
-            _('[red]Error replacing binary:[/red] {error}').format(error=e)
+            _('[red]Error replacing binary:[/red] {error}').format(error=error)
         )
         console.print(
             _(
@@ -555,25 +142,39 @@ def replace_binary(downloaded_binary_path: str):
         raise typer.Exit(1)
 
 
+def _sudo_run(arguments: list[str]) -> None:
+    try:
+        subprocess.run(['sudo', *arguments], check=True)
+    except subprocess.CalledProcessError as error:
+        console.print(
+            _(
+                '[red]Error:[/red] Failed to run sudo command: {command}'
+            ).format(command=' '.join(arguments))
+        )
+        raise typer.Exit(1)
+
+
+def _install_with_sudo(source: Path, destination: Path) -> None:
+    _sudo_run(['install', '-Dm644', str(source), str(destination)])
+
+
 @app.callback(invoke_without_command=True)
-def update():
-    """
-    Checks for and installs updates for easyinstaller.
-    """
-    console.print(_('[bold green]Checking for updates...[/bold green]'))
+def update() -> None:
+    """Checks for updates and installs the latest release."""
+    console.print('[bold green]Checking for updates...[/bold green]')
 
     current_version = get_current_version()
     console.print(
-        _(
-            'Current easyinstaller version: [yellow]{current_version}[/yellow]'
-        ).format(current_version=current_version)
+        _('Current easyinstaller version: [yellow]{version}[/yellow]').format(
+            version=current_version
+        )
     )
 
     latest_release = get_latest_release_info()
     latest_version = latest_release['tag_name']
     console.print(
-        _('Latest available version: [green]{latest_version}[/green]').format(
-            latest_version=latest_version
+        _('Latest available version: [green]{version}[/green]').format(
+            version=latest_version
         )
     )
 
@@ -586,82 +187,70 @@ def update():
         raise typer.Exit()
 
     console.print(_('[bold yellow]A new version is available![/bold yellow]'))
-    if not typer.confirm(_('Do you want to update now?')):
+    if not typer.confirm(_('Do you want to update now?'), default=False):
         raise typer.Abort()
 
     system_arch = get_system_arch()
     console.print(
-        _('Detected system architecture: [cyan]{system_arch}[/cyan]').format(
-            system_arch=system_arch
+        _('Detected system architecture: [cyan]{arch}[/cyan]').format(
+            arch=system_arch
         )
     )
 
     binary_asset_name = (
-        f'ei-linux-musl-amd64'
+        'ei-linux-musl-amd64'
         if system_arch == 'musl'
-        else f'ei-linux-glibc2.31-amd64'
+        else 'ei-linux-glibc2.31-amd64'
     )
-    changelog_asset_name = 'CHANGELOG.md'
-    license_asset_name = 'LICENSE'
 
-    download_urls = {}
-    for asset in latest_release['assets']:
-        if asset['name'] == binary_asset_name:
-            download_urls['binary'] = asset['browser_download_url']
-        elif asset['name'] == changelog_asset_name:
-            download_urls['changelog'] = asset['browser_download_url']
-        elif asset['name'] == license_asset_name:
-            download_urls['license'] = asset['browser_download_url']
+    download_urls: Dict[str, str] = {}
+    for asset in latest_release.get('assets', []):
+        download_urls[asset['name']] = asset['browser_download_url']
 
-    if 'binary' not in download_urls:
+    if binary_asset_name not in download_urls:
         console.print(
             _(
-                '[red]Error: Could not find binary asset for {system_arch} in latest release.[/red]'
-            ).format(system_arch=system_arch)
+                '[red]Error:[/red] Could not find binary asset for {arch} in latest release.'
+            ).format(arch=system_arch)
         )
         raise typer.Exit(1)
 
-    # Create a temporary directory for downloads
-    import tempfile
+    with tempfile.TemporaryDirectory() as tmpdir_str:
+        tmpdir = Path(tmpdir_str)
+        downloaded_binary = tmpdir / binary_asset_name
+        downloaded_changelog = tmpdir / CHANGELOG_FILE
+        downloaded_license = tmpdir / LICENSE_FILE
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        downloaded_binary_path = os.path.join(tmpdir, binary_asset_name)
-        downloaded_changelog_path = os.path.join(tmpdir, changelog_asset_name)
-        downloaded_license_path = os.path.join(tmpdir, license_asset_name)
+        download_asset(download_urls[binary_asset_name], downloaded_binary)
 
-        download_asset(download_urls['binary'], downloaded_binary_path)
-        download_asset(
-            download_urls.get('changelog', ''), downloaded_changelog_path
-        )
-        download_asset(
-            download_urls.get('license', ''), downloaded_license_path
-        )
+        if CHANGELOG_FILE in download_urls:
+            download_asset(download_urls[CHANGELOG_FILE], downloaded_changelog)
 
-        replace_binary(downloaded_binary_path)
+        if LICENSE_FILE in download_urls:
+            download_asset(download_urls[LICENSE_FILE], downloaded_license)
 
-        # Store changelog and license in DATA_DIR
-        os.makedirs(DATA_DIR, exist_ok=True)
-        if os.path.exists(downloaded_changelog_path):
-            shutil.copy(
-                downloaded_changelog_path,
-                os.path.join(DATA_DIR, changelog_asset_name),
+        replace_binary(downloaded_binary)
+
+        _sudo_run(['mkdir', '-p', DATA_DIR])
+
+        if downloaded_changelog.exists():
+            _install_with_sudo(
+                downloaded_changelog, Path(DATA_DIR) / CHANGELOG_FILE
             )
-        if os.path.exists(downloaded_license_path):
-            shutil.copy(
-                downloaded_license_path,
-                os.path.join(DATA_DIR, license_asset_name),
+
+        if downloaded_license.exists():
+            _install_with_sudo(
+                downloaded_license, Path(DATA_DIR) / LICENSE_FILE
             )
 
     console.print(
         _('[bold green]✔ easyinstaller updated successfully![/bold green]')
     )
 
-    # Display changelog
-    if os.path.exists(os.path.join(DATA_DIR, changelog_asset_name)):
+    changelog_on_disk = Path(DATA_DIR) / CHANGELOG_FILE
+    if changelog_on_disk.exists():
         console.print(_("\n[bold blue]What's New:[/bold blue]"))
-        with open(os.path.join(DATA_DIR, changelog_asset_name), 'r') as f:
-            changelog_content = f.read()
-        console.print(Markdown(changelog_content))
+        console.print(Markdown(changelog_on_disk.read_text(encoding='utf-8')))
 
     console.print(
         _(

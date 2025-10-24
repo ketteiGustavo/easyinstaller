@@ -13,3 +13,4 @@
 - :🐛: fix: correção de bugs (por: Luiz Gustavo em 24-10-2025 08:18)
 - :📦: build: versao atualizada (por: Luiz Gustavo em 24-10-2025 08:22)
 - :🐛: fix: correção em versão (por: Luiz Gustavo em 24-10-2025 08:24)
+- :🐛: fix: correção em bug que impedia atualizar (por: Luiz Gustavo em 24-10-2025 08:49)

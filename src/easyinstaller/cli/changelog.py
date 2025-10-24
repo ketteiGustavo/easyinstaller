@@ -153,11 +153,15 @@ def _render_changelog_file(fmt: str, options_used: bool = False) -> None:
         raise typer.Exit(1)
 
     console.print(
-        _('[yellow]No Git repository detected. Showing CHANGELOG.md contents instead.[/yellow]')
+        _(
+            '[yellow]No Git repository detected. Showing CHANGELOG.md contents instead.[/yellow]'
+        )
     )
     if options_used:
         console.print(
-            _('[yellow]Warning:[/yellow] Git-specific options were ignored while reading the bundled changelog.')
+            _(
+                '[yellow]Warning:[/yellow] Git-specific options were ignored while reading the bundled changelog.'
+            )
         )
 
     content = changelog_path.read_text(encoding='utf-8')
@@ -190,7 +194,9 @@ def _collect_commits(revision: str) -> List[CommitEntry]:
             continue
         commit_hash, subject, body = parts[0], parts[1], parts[2]
 
-        revert_match = REVERT_RE.search(body) if subject.startswith('Revert') else None
+        revert_match = (
+            REVERT_RE.search(body) if subject.startswith('Revert') else None
+        )
         if revert_match:
             reverted_prefixes.append(revert_match.group(1))
             continue
@@ -250,7 +256,9 @@ def _format_header(level: int, title: str, fmt: str) -> str:
     return f'[bold]{title}[/bold]'
 
 
-def _format_entry(commit: CommitEntry, fmt: str, repo_url: Optional[str]) -> str:
+def _format_entry(
+    commit: CommitEntry, fmt: str, repo_url: Optional[str]
+) -> str:
     scope_part = f'[{commit.scope}] ' if commit.scope else ''
     short_hash = commit.commit_hash[:7]
     if fmt == 'md':
@@ -279,7 +287,11 @@ def _render_text(
         entries = sections.get(commit_type)
         if not entries:
             continue
-        console.print(_format_header(3, TYPE_LABELS.get(commit_type, TYPE_LABELS['other']), 'text'))
+        console.print(
+            _format_header(
+                3, TYPE_LABELS.get(commit_type, TYPE_LABELS['other']), 'text'
+            )
+        )
         for commit in entries:
             console.print(_format_entry(commit, 'text', None))
         console.print()
@@ -313,7 +325,11 @@ def _render_plain(
         entries = sections.get(commit_type)
         if not entries:
             continue
-        lines.append(_format_header(3, TYPE_LABELS.get(commit_type, TYPE_LABELS['other']), fmt))
+        lines.append(
+            _format_header(
+                3, TYPE_LABELS.get(commit_type, TYPE_LABELS['other']), fmt
+            )
+        )
         for commit in entries:
             lines.append(_format_entry(commit, fmt, repo_url).rstrip())
         lines.append('')
@@ -326,7 +342,11 @@ def _render_plain(
         if not entries:
             continue
         if fmt == 'md':
-            lines.append(_format_header(3, TYPE_LABELS.get(commit_type, TYPE_LABELS['other']), fmt))
+            lines.append(
+                _format_header(
+                    3, TYPE_LABELS.get(commit_type, TYPE_LABELS['other']), fmt
+                )
+            )
         for commit in entries:
             lines.append(_format_entry(commit, fmt, repo_url).rstrip())
 
@@ -346,7 +366,9 @@ def changelog(
     tag: Optional[str] = typer.Option(
         None,
         '--tag',
-        help=_('Use a specific tag as the upper bound instead of the latest tag.'),
+        help=_(
+            'Use a specific tag as the upper bound instead of the latest tag.'
+        ),
     ),
     since: Optional[str] = typer.Option(
         None,
@@ -356,7 +378,9 @@ def changelog(
     until: Optional[str] = typer.Option(
         None,
         '--until',
-        help=_('Optional ending reference for the changelog range. Defaults to the provided tag or HEAD.'),
+        help=_(
+            'Optional ending reference for the changelog range. Defaults to the provided tag or HEAD.'
+        ),
     ),
 ) -> None:
     """
@@ -369,9 +393,9 @@ def changelog(
 
     if fmt not in FORMAT_CHOICES:
         console.print(
-            _('[red]Error:[/red] Invalid format "{value}". Choose from: {choices}.').format(
-                value=fmt, choices=', '.join(FORMAT_CHOICES)
-            )
+            _(
+                '[red]Error:[/red] Invalid format "{value}". Choose from: {choices}.'
+            ).format(value=fmt, choices=', '.join(FORMAT_CHOICES))
         )
         raise typer.Exit(1)
 
@@ -405,7 +429,9 @@ def changelog(
 
     commits = _collect_commits(revision)
     if not commits:
-        console.print(_('[yellow]No commits found for the selected range.[/yellow]'))
+        console.print(
+            _('[yellow]No commits found for the selected range.[/yellow]')
+        )
         return
 
     sections, breakings = _group_commits(commits)

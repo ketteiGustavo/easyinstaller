@@ -10,12 +10,12 @@ setup_i18n(config['language'])
 
 from easyinstaller.cli import add as add_app
 from easyinstaller.cli import apt as apt_app
+from easyinstaller.cli import changelog as changelog_app
 from easyinstaller.cli import completion as completion_app
 from easyinstaller.cli import config as config_app
 from easyinstaller.cli import export as export_app
 from easyinstaller.cli import favorites as favorites_app
 from easyinstaller.cli import flatpak as flatpak_app
-from easyinstaller.cli import changelog as changelog_app
 from easyinstaller.cli import hist as hist_app
 from easyinstaller.cli import import_app
 from easyinstaller.cli import license as license_app
@@ -46,14 +46,18 @@ app.add_typer(favorites_app.app, name='favorites')
 app.add_typer(uninstall_app.app, name='uninstall')
 app.add_typer(apt_app.app, name='apt')
 app.add_typer(flatpak_app.app, name='flatpak')
-app.add_typer(flatpak_app.app, name='fp', hidden=True)
 app.add_typer(snap_app.app, name='snap')
-app.add_typer(snap_app.app, name='sp', hidden=True)
 app.add_typer(license_app.app, name='license')
 app.add_typer(completion_app.app, name='completion')
 app.add_typer(changelog_app.app, name='changelog')
 app.add_typer(changelog_app.app, name='news')
 app.add_typer(update_app.app, name='update')
+
+
+ALIASES = {
+    'fp': 'flatpak',
+    'sp': 'snap',
+}
 
 
 def _resolve_version() -> str:
@@ -76,26 +80,28 @@ def _resolve_version() -> str:
     return _('Unknown')
 
 
-def _version_callback(value: bool) -> None:
-    if value:
-        typer.echo(_resolve_version())
-        raise typer.Exit()
-
-
-@app.callback()
+@app.callback(invoke_without_command=True)
 def main(
+    ctx: typer.Context,
     version: bool = typer.Option(
         False,
         '--version',
         '-V',
-        callback=_version_callback,
-        is_eager=True,
         help=_('Show EasyInstaller version and exit.'),
-    )
+        is_flag=True,
+    ),
 ):
     """A universal installation manager for Linux."""
-    return
+    if version:
+        typer.echo(_resolve_version())
+        raise typer.Exit()
+
+    if ctx.invoked_subcommand is None and ctx.args:
+        # no subcommand matched; Typer will handle
+        return
 
 
 if __name__ == '__main__':
+    if len(sys.argv) > 1 and sys.argv[1] in ALIASES:
+        sys.argv[1] = ALIASES[sys.argv[1]]
     app()

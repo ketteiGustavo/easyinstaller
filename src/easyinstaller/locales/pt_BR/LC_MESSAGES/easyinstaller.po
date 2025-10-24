@@ -145,6 +145,70 @@ msgstr "[yellow]Aviso:[/yellow] As opções específicas de Git foram ignoradas 
 msgid "Show EasyInstaller version and exit."
 msgstr "Mostra a versão do EasyInstaller e sai."
 
+#: src/easyinstaller/cli/update.py:57
+msgid "Downloading [cyan]{filename}[/cyan]..."
+msgstr "Baixando [cyan]{filename}[/cyan]..."
+
+#: src/easyinstaller/cli/update.py:70
+msgid "[red]Error downloading {filename}:[/red] {error}"
+msgstr "[red]Erro ao baixar {filename}:[/red] {error}"
+
+#: src/easyinstaller/cli/update.py:79
+msgid "Replacing [cyan]{path}[/cyan] with new version..."
+msgstr "Substituindo [cyan]{path}[/cyan] pela nova versão..."
+
+#: src/easyinstaller/cli/update.py:90
+msgid "[red]Error replacing binary:[/red] {error}"
+msgstr "[red]Erro ao substituir o binário:[/red] {error}"
+
+#: src/easyinstaller/cli/update.py:94
+msgid "[red]Please try running the update command with sudo: `sudo ei update`[/red]"
+msgstr "[red]Tente executar o comando de atualização com sudo: `sudo ei update`[/red]"
+
+#: src/easyinstaller/cli/update.py:105
+msgid "[red]Error:[/red] Failed to run sudo command: {command}"
+msgstr "[red]Erro:[/red] Falha ao executar o comando sudo: {command}"
+
+#: src/easyinstaller/cli/update.py:122
+msgid "Current easyinstaller version: [yellow]{version}[/yellow]"
+msgstr "Versão atual do easyinstaller: [yellow]{version}[/yellow]"
+
+#: src/easyinstaller/cli/update.py:129
+msgid "Latest available version: [green]{version}[/green]"
+msgstr "Última versão disponível: [green]{version}[/green]"
+
+#: src/easyinstaller/cli/update.py:136
+msgid "[bold blue]You are already running the latest version.[/bold blue]"
+msgstr "[bold blue]Você já está usando a versão mais recente.[/bold blue]"
+
+#: src/easyinstaller/cli/update.py:140
+msgid "Do you want to update now?"
+msgstr "Deseja atualizar agora?"
+
+#: src/easyinstaller/cli/update.py:145
+msgid "Detected system architecture: [cyan]{arch}[/cyan]"
+msgstr "Arquitetura detectada: [cyan]{arch}[/cyan]"
+
+#: src/easyinstaller/cli/update.py:167
+msgid "[red]Error:[/red] Could not find binary asset for {arch} in latest release."
+msgstr "[red]Erro:[/red] Não foi possível encontrar o binário para {arch} na última release."
+
+#: src/easyinstaller/cli/update.py:150
+msgid "[bold yellow]A new version is available![/bold yellow]"
+msgstr "[bold yellow]Uma nova versão está disponível![/bold yellow]"
+
+#: src/easyinstaller/cli/update.py:176
+msgid "[bold green]✔ easyinstaller updated successfully![/bold green]"
+msgstr "[bold green]✔ easyinstaller atualizado com sucesso![/bold green]"
+
+#: src/easyinstaller/cli/update.py:179
+msgid "\n[bold blue]What's New:[/bold blue]"
+msgstr "\n[bold blue]Novidades:[/bold blue]"
+
+#: src/easyinstaller/cli/update.py:187
+msgid "Please restart your shell or terminal for changes to take full effect."
+msgstr "Reinicie o shell ou terminal para que as alterações tenham efeito completo."
+
 #: src/easyinstaller/cli/changelog.py:287
 msgid "Output format: text (default), md, or raw."
 msgstr "Formato de saída: text (padrão), md ou raw."
@@ -427,99 +491,14 @@ msgstr "Verifica e instala atualizações do easyinstaller."
 msgid "[red]Error: Could not find VERSION file.[/red]"
 msgstr "[red]Erro: não foi possível encontrar o arquivo VERSION.[/red]"
 
-#: src/easyinstaller/cli/update.py:50
-msgid ""
-"[red]Error reading current version:[/red] Failed to edit, 0 occurrences "
-"found for old_string (import os"
-msgstr "[red]Erro ao ler a versão atual:[/red] Falha ao editar, 0 ocorrências encontradas para old_string (import os"
+#: src/easyinstaller/cli/update.py:44
+msgid "[red]Error reading current version:[/red] {error}"
+msgstr "[red]Erro ao ler a versão atual:[/red] {error}"
 
 #: src/easyinstaller/cli/update.py:549
 #, python-brace-format
 msgid "[red]Error fetching latest release from GitHub:[/red] {error}"
 msgstr "[red]Erro ao buscar a última versão no GitHub:[/red] {error}"
-
-#: src/easyinstaller/cli/update.py:588
-#, python-brace-format
-msgid "Downloading [cyan]{file_name}[/cyan]..."
-msgstr "Baixando [cyan]{file_name}[/cyan]..."
-
-#: src/easyinstaller/cli/update.py:597
-#, python-brace-format
-msgid "[red]Error downloading {file_name}:[/red] {error}"
-msgstr "[red]Erro ao baixar {file_name}:[/red] {error}"
-
-#: src/easyinstaller/cli/update.py:611
-#, python-brace-format
-msgid "Replacing [cyan]{current_exe_path}[/cyan] with new version..."
-msgstr "Substituindo [cyan]{current_exe_path}[/cyan] pela nova versão..."
-
-#: src/easyinstaller/cli/update.py:624
-msgid "[green]✔ Binary replaced successfully.[/green]"
-msgstr "[green]✔ Binário substituído com sucesso.[/green]"
-
-#: src/easyinstaller/cli/update.py:626
-#, python-brace-format
-msgid "[red]Error replacing binary:[/red] {error}"
-msgstr "[red]Erro ao substituir o binário:[/red] {error}"
-
-#: src/easyinstaller/cli/update.py:628
-msgid ""
-"[red]Please try running the update command with sudo: `sudo ei update`[/red]"
-msgstr "[red]Tente executar o comando de atualização com sudo: `sudo ei update`[/red]"
-
-#: src/easyinstaller/cli/update.py:638
-msgid "[bold green]Checking for updates...[/bold green]"
-msgstr "[bold green]Verificando por atualizações...[/bold green]"
-
-#: src/easyinstaller/cli/update.py:642
-#, python-brace-format
-msgid "Current easyinstaller version: [yellow]{current_version}[/yellow]"
-msgstr "Versão atual do easyinstaller: [yellow]{current_version}[/yellow]"
-
-#: src/easyinstaller/cli/update.py:647
-#, python-brace-format
-msgid "Latest available version: [green]{latest_version}[/green]"
-msgstr "Última versão disponível: [green]{latest_version}[/green]"
-
-#: src/easyinstaller/cli/update.py:651
-msgid "[bold blue]You are already running the latest version.[/bold blue]"
-msgstr "[bold blue]Você já está usando a versão mais recente.[/bold blue]"
-
-#: src/easyinstaller/cli/update.py:655
-msgid "[bold yellow]A new version is available![/bold yellow]"
-msgstr "[bold yellow]Uma nova versão está disponível![/bold yellow]"
-
-#: src/easyinstaller/cli/update.py:656
-msgid "Do you want to update now?"
-msgstr "Deseja atualizar agora?"
-
-#: src/easyinstaller/cli/update.py:660
-#, python-brace-format
-msgid "Detected system architecture: [cyan]{system_arch}[/cyan]"
-msgstr "Arquitetura do sistema detectada: [cyan]{system_arch}[/cyan]"
-
-#: src/easyinstaller/cli/update.py:681
-#, python-brace-format
-msgid ""
-"[red]Error: Could not find binary asset for {system_arch} in latest release."
-"[/red]"
-msgstr "[red]Erro: não foi possível encontrar o binário para {system_arch} na última release.[/red]"
-
-#: src/easyinstaller/cli/update.py:717
-msgid "[bold green]✔ easyinstaller updated successfully![/bold green]"
-msgstr "[bold green]✔ easyinstaller atualizado com sucesso![/bold green]"
-
-#: src/easyinstaller/cli/update.py:722
-msgid ""
-"\n"
-"[bold blue]What's New:[/bold blue]"
-msgstr ""
-"\n"
-"[bold blue]Novidades:[/bold blue]"
-
-#: src/easyinstaller/cli/update.py:728
-msgid "Please restart your shell or terminal for changes to take full effect."
-msgstr "Reinicie o shell ou terminal para que as alterações tenham efeito completo."
 
 #: src/easyinstaller/cli/import_app.py:11
 msgid "Installs packages from a previously exported JSON file."
