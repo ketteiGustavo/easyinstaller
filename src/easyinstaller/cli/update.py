@@ -12,6 +12,12 @@ import typer
 from rich.console import Console
 from rich.markdown import Markdown
 
+from easyinstaller.core.versioning import (
+    DATA_DIR,
+    compare_versions,
+    fetch_latest_release_info,
+    get_installed_version,
+)
 from easyinstaller.i18n.i18n import _
 
 app = typer.Typer(
@@ -21,61 +27,8 @@ app = typer.Typer(
 )
 console = Console()
 
-GITHUB_REPO = 'ketteiGustavo/easyinstaller'
-DATA_DIR = '/usr/local/share/easyinstaller'
 CHANGELOG_FILE = 'CHANGELOG.md'
 LICENSE_FILE = 'LICENSE'
-
-
-def get_current_version() -> str:
-    """Reads the current version string from a bundled VERSION file."""
-    search_paths = [
-        Path(sys.executable).resolve().parent / 'easyinstaller' / 'VERSION',
-        Path(__file__).resolve().parent.parent / 'VERSION',
-    ]
-
-    for path in search_paths:
-        if path.is_file():
-            try:
-                return path.read_text(encoding='utf-8').strip()
-            except OSError as error:
-                console.print(
-                    _(
-                        '[red]Error reading current version:[/red] {error}'
-                    ).format(error=error)
-                )
-                raise typer.Exit(1)
-
-    console.print(_('[red]Error: Could not find VERSION file.[/red]'))
-    raise typer.Exit(1)
-
-
-def get_latest_release_info() -> Dict:
-    """Fetches the latest release information from GitHub."""
-    api_url = f'https://api.github.com/repos/{GITHUB_REPO}/releases/latest'
-    try:
-        response = requests.get(api_url, timeout=30)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.RequestException as error:
-        console.print(
-            _(
-                '[red]Error fetching latest release from GitHub:[/red] {error}'
-            ).format(error=error)
-        )
-        raise typer.Exit(1)
-
-
-def compare_versions(current_v: str, latest_v: str) -> bool:
-    """Returns True if the latest version is newer than the current one."""
-    current_parts = list(map(int, current_v.lstrip('v').split('.')))
-    latest_parts = list(map(int, latest_v.lstrip('v').split('.')))
-
-    max_len = max(len(current_parts), len(latest_parts))
-    current_parts.extend([0] * (max_len - len(current_parts)))
-    latest_parts.extend([0] * (max_len - len(latest_parts)))
-
-    return latest_parts > current_parts
 
 
 def get_system_arch() -> str:
@@ -159,18 +112,46 @@ def _install_with_sudo(source: Path, destination: Path) -> None:
 
 
 @app.callback(invoke_without_command=True)
-def update() -> None:
+def update(
+    auto_confirm: bool = typer.Option(
+        False,
+        '--yes',
+        '-y',
+        help=_('Skip confirmation prompt and update immediately.'),
+    )
+) -> None:
     """Checks for updates and installs the latest release."""
     console.print('[bold green]Checking for updates...[/bold green]')
 
-    current_version = get_current_version()
+    try:
+        current_version = get_installed_version()
+    except FileNotFoundError:
+        console.print(_('[red]Error: Could not find VERSION file.[/red]'))
+        raise typer.Exit(1)
+    except RuntimeError as error:
+        console.print(
+            _('[red]Error reading current version:[/red] {error}').format(
+                error=error
+            )
+        )
+        raise typer.Exit(1)
+
     console.print(
         _('Current easyinstaller version: [yellow]{version}[/yellow]').format(
             version=current_version
         )
     )
 
-    latest_release = get_latest_release_info()
+    try:
+        latest_release = fetch_latest_release_info()
+    except requests.exceptions.RequestException as error:
+        console.print(
+            _(
+                '[red]Error fetching latest release from GitHub:[/red] {error}'
+            ).format(error=error)
+        )
+        raise typer.Exit(1)
+
     latest_version = latest_release['tag_name']
     console.print(
         _('Latest available version: [green]{version}[/green]').format(
@@ -187,7 +168,9 @@ def update() -> None:
         raise typer.Exit()
 
     console.print(_('[bold yellow]A new version is available![/bold yellow]'))
-    if not typer.confirm(_('Do you want to update now?'), default=False):
+    if not auto_confirm and not typer.confirm(
+        _('Do you want to update now?'), default=False
+    ):
         raise typer.Abort()
 
     system_arch = get_system_arch()
@@ -220,6 +203,7 @@ def update() -> None:
         downloaded_binary = tmpdir / binary_asset_name
         downloaded_changelog = tmpdir / CHANGELOG_FILE
         downloaded_license = tmpdir / LICENSE_FILE
+        downloaded_version = tmpdir / 'VERSION'
 
         download_asset(download_urls[binary_asset_name], downloaded_binary)
 
@@ -231,23 +215,22 @@ def update() -> None:
 
         replace_binary(downloaded_binary)
 
-        _sudo_run(['mkdir', '-p', DATA_DIR])
+        _sudo_run(['mkdir', '-p', str(DATA_DIR)])
 
         if downloaded_changelog.exists():
-            _install_with_sudo(
-                downloaded_changelog, Path(DATA_DIR) / CHANGELOG_FILE
-            )
+            _install_with_sudo(downloaded_changelog, DATA_DIR / CHANGELOG_FILE)
 
         if downloaded_license.exists():
-            _install_with_sudo(
-                downloaded_license, Path(DATA_DIR) / LICENSE_FILE
-            )
+            _install_with_sudo(downloaded_license, DATA_DIR / LICENSE_FILE)
+
+        downloaded_version.write_text(latest_version, encoding='utf-8')
+        _install_with_sudo(downloaded_version, DATA_DIR / 'VERSION')
 
     console.print(
         _('[bold green]✔ easyinstaller updated successfully![/bold green]')
     )
 
-    changelog_on_disk = Path(DATA_DIR) / CHANGELOG_FILE
+    changelog_on_disk = DATA_DIR / CHANGELOG_FILE
     if changelog_on_disk.exists():
         console.print(_("\n[bold blue]What's New:[/bold blue]"))
         console.print(Markdown(changelog_on_disk.read_text(encoding='utf-8')))

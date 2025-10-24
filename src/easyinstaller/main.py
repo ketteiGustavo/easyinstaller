@@ -5,6 +5,7 @@ import typer
 
 from easyinstaller.core.config import config
 from easyinstaller.i18n.i18n import _, setup_i18n
+from easyinstaller.utils.update_prompt import UpdatePrompt
 
 setup_i18n(config['language'])
 
@@ -59,11 +60,14 @@ ALIASES = {
     'sp': 'snap',
 }
 
+_update_prompt = UpdatePrompt()
+
 
 def _resolve_version() -> str:
     """Best-effort loader for the EasyInstaller version string."""
     # Candidate VERSION files when running from source or bundled binary
     possible_paths = [
+        Path('/usr/local/share/easyinstaller') / 'VERSION',
         Path(__file__).resolve().parent / 'VERSION',
         Path(__file__).resolve().parent.parent / 'VERSION',
         Path(sys.executable).resolve().parent / 'easyinstaller' / 'VERSION',
@@ -96,6 +100,11 @@ def main(
         typer.echo(_resolve_version())
         raise typer.Exit()
 
+    _update_prompt.begin()
+
+    # schedule update notification after the command finishes
+    ctx.call_on_close(lambda: _update_prompt.notify(ctx))
+
     if ctx.invoked_subcommand is None and ctx.args:
         # no subcommand matched; Typer will handle
         return
@@ -104,4 +113,5 @@ def main(
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] in ALIASES:
         sys.argv[1] = ALIASES[sys.argv[1]]
+    _update_prompt.begin()
     app()

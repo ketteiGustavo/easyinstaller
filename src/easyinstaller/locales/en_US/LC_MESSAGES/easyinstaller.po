@@ -214,9 +214,21 @@ msgstr "[bold green]✔ easyinstaller updated successfully![/bold green]"
 msgid "\n[bold blue]What's New:[/bold blue]"
 msgstr "\n[bold blue]What's New:[/bold blue]"
 
+#: src/easyinstaller/utils/update_prompt.py:64
+msgid "[yellow]A newer version ({version}) is available. Do you want to update now?[/yellow]"
+msgstr "[yellow]A newer version ({version}) is available. Do you want to update now?[/yellow]"
+
+#: src/easyinstaller/utils/update_prompt.py:72
+msgid "[yellow]You can update later by running `ei update`.[/yellow]"
+msgstr "[yellow]You can update later by running `ei update`.[/yellow]"
+
 #: src/easyinstaller/cli/update.py:187
 msgid "Please restart your shell or terminal for changes to take full effect."
 msgstr "Please restart your shell or terminal for changes to take full effect."
+
+#: src/easyinstaller/cli/update.py:84
+msgid "Skip confirmation prompt and update immediately."
+msgstr "Skip confirmation prompt and update immediately."
 
 #: src/easyinstaller/cli/changelog.py:287
 msgid "Output format: text (default), md, or raw."
