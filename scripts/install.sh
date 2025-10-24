@@ -23,9 +23,14 @@ prompt_language() {
   printf "\nSelecione o idioma padrão do EasyInstaller:\n"
   printf "  1) English (United States) [en_US]\n"
   printf "  2) Português (Brasil) [pt_BR]\n"
-
-  local choice
-  read -p "Escolha: " choice
+  local choice=""
+  if [ -t 0 ]; then
+    read -r -p "Escolha [1]: " choice || choice=""
+  elif [ -r /dev/tty ]; then
+    read -r -p "Escolha [1]: " choice < /dev/tty || choice=""
+  else
+    choice=""
+  fi
   case "${choice:-1}" in
     2|pt_BR|PT|pt|br|BR) EASYINSTALLER_LANG="pt_BR" ;;
     *) EASYINSTALLER_LANG="en_US" ;;
