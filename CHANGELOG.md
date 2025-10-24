@@ -18,3 +18,4 @@
 - :✨: feat: melhoria no fluxo do update e novos recursos (por: Luiz Gustavo em 24-10-2025 10:35)
 - :📦: build: nova versão (por: Luiz Gustavo em 24-10-2025 10:37)
 - :🐛: fix: correção em bug que não removia pacotes flatpak (por: Luiz Gustavo em 24-10-2025 19:21)
+- :📦: build: versão atualizada (por: Luiz Gustavo em 24-10-2025 19:22)
