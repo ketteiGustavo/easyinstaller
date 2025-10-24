@@ -68,10 +68,18 @@ def rm(
             ).format(package_query=package_query)
         )
 
+        normalized_query = package_query.lower()
         exact_matches = [
             pkg
             for pkg in installed_packages
-            if package_query.lower() == pkg.get('name', '').lower()
+            if any(
+                normalized_query == candidate.lower()
+                for candidate in (
+                    pkg.get('name', ''),
+                    pkg.get('id', ''),
+                )
+                if candidate
+            )
         ]
 
         packages_to_process = []
