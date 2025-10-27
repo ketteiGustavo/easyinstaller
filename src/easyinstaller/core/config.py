@@ -60,21 +60,36 @@ def get_config() -> dict:
     """
     Loads the configuration from the JSON file.
     If the file or directory doesn't exist, it creates them with default values.
+    It also handles migration of old keys for backward compatibility.
     """
     if not CONFIG_FILE.exists():
-        return create_default_config()
+        cfg = create_default_config()
     else:
         try:
             with open(CONFIG_FILE, 'r') as f:
                 cfg = json.load(f)
         except (json.JSONDecodeError, IOError):
-            # If file is corrupted or unreadable, create a new default one
             cfg = create_default_config()
 
-        for key, value in default_paths().items():
-            cfg.setdefault(key, value)
+    # Migrate old keys for backward compatibility
+    if 'log_dir' in cfg and 'log_path' not in cfg:
+        cfg['log_path'] = cfg['log_dir']
+        del cfg['log_dir']
 
-        _ensure_dirs(cfg)
+    if 'export_dir' in cfg and 'export_path' not in cfg:
+        cfg['export_path'] = cfg['export_dir']
+        del cfg['export_dir']
+
+    # Ensure all default paths are present
+    for key, value in default_paths().items():
+        cfg.setdefault(key, value)
+
+    # For full backward compatibility, ensure the old keys exist as aliases
+    # This prevents KeyErrors in code that hasn't been updated yet.
+    cfg['log_dir'] = cfg['log_path']
+    cfg['export_dir'] = cfg['export_path']
+
+    _ensure_dirs(cfg)
     return cfg
 
 
