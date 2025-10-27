@@ -125,7 +125,7 @@ verify_sha256_if_exists() {
   if curl -fsI "$sha_url" >/dev/null 2>&1; then
     info "Baixando checksum: $sha_url"
     dl "$sha_url" "$tmp_sha"
-    if ! (cd "$(dirname "$file")" && sha256sum -c <(sed "s| .*|  $(basename "$file")|")) < "$tmp_sha"; then
+    if ! (cd "$(dirname "$file")" && sed "s| .*|  $(basename "$file")|" "$tmp_sha" | sha256sum -c -); then
       rm -f "$tmp_sha"
       error "Checksum SHA256 não confere para $(basename "$file")."
     fi

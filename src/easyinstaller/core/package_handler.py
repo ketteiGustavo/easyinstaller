@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import subprocess
 from datetime import datetime
 
 from rich.console import Console
@@ -50,6 +51,28 @@ MANAGER_TO_LISTER = {
 }
 
 
+def prime_sudo_session() -> bool:
+    """
+    Runs `sudo -v` to refresh the user's sudo timestamp.
+    This should be called before a batch of operations requiring sudo.
+    Returns True if successful or not needed, False on failure.
+    """
+    if os.geteuid() == 0:
+        return True
+
+    console.print(_('[cyan]Refreshing sudo credentials...[/cyan]'))
+    returncode = run_cmd_smart('sudo -v')
+    if returncode != 0:
+        console.print(
+            _(
+                '[yellow]Could not refresh sudo credentials. You may be prompted for a password multiple times.[/yellow]'
+            )
+        )
+        return False
+    console.print('[green]Sudo credentials refreshed.[/green]')
+    return True
+
+
 def _get_native_cmd(action: str, purge: bool = False) -> str:
     native_manager = get_native_manager_type()
     if native_manager == 'unknown':
@@ -72,6 +95,58 @@ def _build_cmd(
         raise ValueError(_(f'Unsupported manager: {manager}'))
 
     return f'{base} {package}'
+
+
+def _ensure_manager_installed(manager_to_check: str):
+    """Checks if flatpak or snap are installed and tries to install them if not."""
+    if (
+        subprocess.run(
+            ['command', '-v', manager_to_check], capture_output=True
+        ).returncode
+        == 0
+    ):
+        return
+
+    native_manager = get_native_manager_type()
+    if native_manager == 'unknown':
+        console.print(
+            _(
+                '[yellow]Warning:[/] Cannot automatically install {manager_to_check} as the native package manager is unknown.'
+            ).format(manager_to_check=manager_to_check)
+        )
+        return
+
+    package_to_install = {'flatpak': 'flatpak', 'snap': 'snapd'}.get(
+        manager_to_check
+    )
+    if not package_to_install:
+        return
+
+    console.print(
+        _(
+            "[cyan]Package manager '{manager_to_check}' not found. Attempting to install it with {native_manager}...[/cyan]"
+        ).format(
+            manager_to_check=manager_to_check, native_manager=native_manager
+        )
+    )
+
+    cmd = _build_cmd(native_manager, 'install', package_to_install)
+    log_path = os.path.join(config['log_dir'], 'ei.log')
+    code = run_cmd_smart(cmd, log_path=log_path)
+
+    if code != 0:
+        console.print(
+            _(
+                '[red]Error:[/] Failed to install {manager_to_check}. Please install it manually and try again.'
+            ).format(manager_to_check=manager_to_check)
+        )
+        raise SystemExit(code)
+
+    console.print(
+        _('✔ Successfully installed {manager_to_check}.').format(
+            manager_to_check=manager_to_check
+        )
+    )
 
 
 def remove_with_manager(package_name: str, manager: str, purge: bool = False):
@@ -146,6 +221,9 @@ def install_with_manager(package_name: str, manager: str):
             ).format(manager=manager)
         )
         raise SystemExit(1)
+
+    if manager in ('flatpak', 'snap'):
+        _ensure_manager_installed(manager)
 
     # Ensure flathub remote exists to avoid interactive prompt
     if manager == 'flatpak':

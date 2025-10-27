@@ -3,7 +3,10 @@ import json
 import typer
 from rich import print
 
-from easyinstaller.core.package_handler import install_with_manager
+from easyinstaller.core.package_handler import (
+    install_with_manager,
+    prime_sudo_session,
+)
 from easyinstaller.i18n.i18n import _
 
 app = typer.Typer(
@@ -53,6 +56,13 @@ def import_packages(
     if not packages_to_install:
         print(_('[yellow]No packages found in the file to install.[/yellow]'))
         return
+
+    # Prime sudo session if apt or snap packages are present
+    if any(
+        manager in ('apt', 'snap') and packages
+        for manager, packages in packages_to_install.items()
+    ):
+        prime_sudo_session()
 
     for manager, packages in packages_to_install.items():
         if packages:

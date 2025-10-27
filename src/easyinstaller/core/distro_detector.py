@@ -6,6 +6,7 @@ DISTRO_TO_MANAGER = {
     'ubuntu': 'apt',
     'debian': 'apt',
     'linuxmint': 'apt',
+    'zorin': 'apt',
     'arch': 'pacman',
     'manjaro': 'pacman',
     'fedora': 'dnf',

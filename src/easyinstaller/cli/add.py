@@ -2,7 +2,10 @@ import typer
 from rich.console import Console
 
 from easyinstaller.cli.utils.ask import ask_user_to_select_packages
-from easyinstaller.core.package_handler import install_with_manager
+from easyinstaller.core.package_handler import (
+    install_with_manager,
+    prime_sudo_session,
+)
 from easyinstaller.core.searcher import unified_search
 from easyinstaller.i18n.i18n import _
 
@@ -24,6 +27,7 @@ def add(
     """
     Finds and installs one or more packages from any available source.
     """
+    packages_to_install = []
     for package_query in packages:
         console.print(
             _(
@@ -55,22 +59,31 @@ def add(
             selected_packages = [package]
         else:
             # Otherwise, ask the user to select from the list of results.
-            selected_packages = ask_user_to_select_packages(results)
+            user_selection = ask_user_to_select_packages(results)
+            if user_selection:
+                selected_packages = user_selection
 
         if selected_packages:
-            for package in selected_packages:
+            packages_to_install.extend(selected_packages)
+
+    if packages_to_install:
+        # Prime sudo session if apt or snap packages are present
+        if any(p['source'] in ('apt', 'snap') for p in packages_to_install):
+            prime_sudo_session()
+
+        for package in packages_to_install:
+            console.print(
+                _(
+                    'Installing [green]{name}[/green] from [cyan]{source}[/cyan]...'
+                ).format(name=package['name'], source=package['source'])
+            )
+            try:
+                install_with_manager(
+                    package_name=package['id'], manager=package['source']
+                )
+            except Exception as e:
                 console.print(
                     _(
-                        'Installing [green]{name}[/green] from [cyan]{source}[/cyan]...'
-                    ).format(name=package['name'], source=package['source'])
+                        '[red]An error occurred while installing {name}:[/red] {error}'
+                    ).format(name=package['name'], error=e)
                 )
-                try:
-                    install_with_manager(
-                        package_name=package['id'], manager=package['source']
-                    )
-                except Exception as e:
-                    console.print(
-                        _(
-                            '[red]An error occurred while installing {name}:[/red] {error}'
-                        ).format(name=package['name'], error=e)
-                    )
