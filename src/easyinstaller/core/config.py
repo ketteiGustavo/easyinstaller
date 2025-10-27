@@ -71,25 +71,43 @@ def get_config() -> dict:
         except (json.JSONDecodeError, IOError):
             cfg = create_default_config()
 
+    needs_write = False
+
     # Migrate old keys for backward compatibility
     if 'log_dir' in cfg and 'log_path' not in cfg:
         cfg['log_path'] = cfg['log_dir']
         del cfg['log_dir']
+        needs_write = True
 
     if 'export_dir' in cfg and 'export_path' not in cfg:
         cfg['export_path'] = cfg['export_dir']
         del cfg['export_dir']
+        needs_write = True
 
     # Ensure all default paths are present
     for key, value in default_paths().items():
-        cfg.setdefault(key, value)
+        if key not in cfg:
+            cfg[key] = value
+            needs_write = True
 
     # For full backward compatibility, ensure the old keys exist as aliases
     # This prevents KeyErrors in code that hasn't been updated yet.
-    cfg['log_dir'] = cfg['log_path']
-    cfg['export_dir'] = cfg['export_path']
+    if cfg.get('log_dir') != cfg['log_path']:
+        cfg['log_dir'] = cfg['log_path']
+        needs_write = True
+    if cfg.get('export_dir') != cfg['export_path']:
+        cfg['export_dir'] = cfg['export_path']
+        needs_write = True
 
     _ensure_dirs(cfg)
+
+    if needs_write:
+        try:
+            with open(CONFIG_FILE, 'w') as f:
+                json.dump(cfg, f, indent=2)
+        except IOError as e:
+            print(_(f'Warning: could not write config file: {e}'))
+
     return cfg
 
 

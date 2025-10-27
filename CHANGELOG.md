@@ -25,3 +25,4 @@
 - :🐛: fix: correcao de bug que nao criava diretorios basicos (por: Luiz Gustavo em 27-10-2025 19:33)
 - :🐛: fix: correcao de bug em dirs (por: Luiz Gustavo em 27-10-2025 19:50)
 - :🐛: fix: correcao de bug em dir (por: Luiz Gustavo em 27-10-2025 20:23)
+- :🐛: fix: correcao em bug de diretorio (por: Luiz Gustavo em 27-10-2025 20:37)
