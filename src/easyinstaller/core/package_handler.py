@@ -131,7 +131,7 @@ def _ensure_manager_installed(manager_to_check: str):
     )
 
     cmd = _build_cmd(native_manager, 'install', package_to_install)
-    log_path = os.path.join(config['log_dir'], 'ei.log')
+    log_path = os.path.join(config['log_path'], 'ei.log')
     code = run_cmd_smart(cmd, log_path=log_path)
 
     if code != 0:
@@ -162,7 +162,7 @@ def remove_with_manager(package_name: str, manager: str, purge: bool = False):
         raise SystemExit(1)
 
     cmd = _build_cmd(manager, 'remove', package_name, purge=purge)
-    log_path = os.path.join(config['log_dir'], 'ei.log')
+    log_path = os.path.join(config['log_path'], 'ei.log')
 
     before_set = lister_func()
     code = run_cmd_smart(cmd, log_path=log_path)
@@ -232,7 +232,7 @@ def install_with_manager(package_name: str, manager: str):
         )
 
     cmd = _build_cmd(manager, 'install', package_name)
-    log_path = os.path.join(config['log_dir'], 'ei.log')
+    log_path = os.path.join(config['log_path'], 'ei.log')
 
     before_set = lister_func()
     code = run_cmd_smart(cmd, log_path=log_path)

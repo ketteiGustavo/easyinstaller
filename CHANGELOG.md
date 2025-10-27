@@ -22,3 +22,4 @@
 - :🐛: fix: correção de bug de remoção e pytest (por: Luiz Gustavo em 24-10-2025 19:44)
 - :🔧: chore: versão atualizada (por: Luiz Gustavo em 24-10-2025 19:45)
 - :✨: feat: ajuste para instalar flat e snap e pedir senha apenas uma vez durante import (por: Luiz Gustavo em 27-10-2025 18:56)
+- :🐛: fix: correcao de bug que nao criava diretorios basicos (por: Luiz Gustavo em 27-10-2025 19:33)
