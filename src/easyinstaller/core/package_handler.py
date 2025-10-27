@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import os
+import shlex
+import shutil
 import subprocess
 from datetime import datetime
+from typing import Sequence
 
 from rich.console import Console
 
-from easyinstaller.core.config import config
+from easyinstaller.core.config import config, default_paths
 from easyinstaller.core.distro_detector import get_native_manager_type
 from easyinstaller.core.history_handler import log_operation
 from easyinstaller.core.lister import (
@@ -51,6 +54,24 @@ MANAGER_TO_LISTER = {
 }
 
 
+def _get_log_file_path() -> str:
+    """
+    Returns the absolute path to the default log file, ensuring the directory exists.
+    Falls back to default paths if configuration keys are missing.
+    """
+    log_dir = (
+        config.get('log_path')
+        or config.get('log_dir')
+        or default_paths().get('log_path')
+    )
+
+    if not log_dir:
+        raise RuntimeError('Unable to determine log directory path.')
+
+    os.makedirs(log_dir, exist_ok=True)
+    return os.path.join(log_dir, 'ei.log')
+
+
 def prime_sudo_session() -> bool:
     """
     Runs `sudo -v` to refresh the user's sudo timestamp.
@@ -85,7 +106,10 @@ def _get_native_cmd(action: str, purge: bool = False) -> str:
 
 
 def _build_cmd(
-    manager: str, action: str, package: str, purge: bool = False
+    manager: str,
+    action: str,
+    packages: str | Sequence[str],
+    purge: bool = False,
 ) -> str:
     if manager == 'apt':
         base = _get_native_cmd(action, purge)
@@ -94,17 +118,21 @@ def _build_cmd(
     else:
         raise ValueError(_(f'Unsupported manager: {manager}'))
 
-    return f'{base} {package}'
+    if isinstance(packages, str):
+        package_list = [packages]
+    else:
+        package_list = [pkg for pkg in packages if pkg]
+
+    if not package_list:
+        raise ValueError(_('No packages specified for command execution.'))
+
+    quoted_packages = ' '.join(shlex.quote(pkg) for pkg in package_list)
+    return f'{base} {quoted_packages}'
 
 
 def _ensure_manager_installed(manager_to_check: str):
     """Checks if flatpak or snap are installed and tries to install them if not."""
-    if (
-        subprocess.run(
-            ['command', '-v', manager_to_check], capture_output=True
-        ).returncode
-        == 0
-    ):
+    if shutil.which(manager_to_check):
         return
 
     native_manager = get_native_manager_type()
@@ -131,7 +159,7 @@ def _ensure_manager_installed(manager_to_check: str):
     )
 
     cmd = _build_cmd(native_manager, 'install', package_to_install)
-    log_path = os.path.join(config['log_path'], 'ei.log')
+    log_path = _get_log_file_path()
     code = run_cmd_smart(cmd, log_path=log_path)
 
     if code != 0:
@@ -162,7 +190,7 @@ def remove_with_manager(package_name: str, manager: str, purge: bool = False):
         raise SystemExit(1)
 
     cmd = _build_cmd(manager, 'remove', package_name, purge=purge)
-    log_path = os.path.join(config['log_path'], 'ei.log')
+    log_path = _get_log_file_path()
 
     before_set = lister_func()
     code = run_cmd_smart(cmd, log_path=log_path)
@@ -209,7 +237,18 @@ def remove_with_manager(package_name: str, manager: str, purge: bool = False):
     )
 
 
-def install_with_manager(package_name: str, manager: str):
+def install_with_manager(package_names: str | Sequence[str], manager: str):
+    if isinstance(package_names, str):
+        package_list = [package_names]
+    else:
+        package_list = [pkg for pkg in package_names if pkg]
+
+    if not package_list:
+        console.print(
+            _('[yellow]No packages were provided for installation.[/yellow]')
+        )
+        return
+
     lister_func = MANAGER_TO_LISTER.get(manager) or MANAGER_TO_LISTER.get(
         get_native_manager_type()
     )
@@ -231,8 +270,8 @@ def install_with_manager(package_name: str, manager: str):
             'flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo'
         )
 
-    cmd = _build_cmd(manager, 'install', package_name)
-    log_path = os.path.join(config['log_path'], 'ei.log')
+    cmd = _build_cmd(manager, 'install', package_list)
+    log_path = _get_log_file_path()
 
     before_set = lister_func()
     code = run_cmd_smart(cmd, log_path=log_path)
@@ -241,7 +280,11 @@ def install_with_manager(package_name: str, manager: str):
         console.print(
             _(
                 '[bold red]Error installing {package_name} (manager: {manager}, exit code: {code}).[/bold red]'
-            ).format(package_name=package_name, manager=manager, code=code)
+            ).format(
+                package_name=', '.join(package_list),
+                manager=manager,
+                code=code,
+            )
         )
         console.print(
             _('Check the log for details: {log_path}').format(
@@ -252,26 +295,36 @@ def install_with_manager(package_name: str, manager: str):
 
     after_set = lister_func()
     newly_installed = sorted(list(after_set - before_set))
+    package_label = (
+        package_list[0]
+        if len(package_list) == 1
+        else _('{} packages').format(len(package_list))
+    )
 
     if not newly_installed:
         console.print(
             _(
-                '[bold yellow]Package {package_name} is already installed or no changes were detected.[/bold yellow]'
-            ).format(package_name=package_name)
+                '[bold yellow]{package_name} is already installed or no changes were detected.[/bold yellow]'
+            ).format(package_name=package_label)
         )
         return
 
-    log_operation(
-        {
-            'action': 'install',
-            'package': package_name,
-            'manager': manager,
-            'timestamp': datetime.now().isoformat(),
-            'installed_packages': newly_installed,
-        }
-    )
+    payload = {
+        'action': 'install',
+        'manager': manager,
+        'timestamp': datetime.now().isoformat(),
+        'packages': package_list,
+        'installed_packages': newly_installed,
+    }
+    if len(package_list) == 1:
+        payload['package'] = package_list[0]
 
-    dep_count = len(newly_installed) - 1
+    log_operation(payload)
+
+    requested_set = set(package_list)
+    dep_count = len(
+        [pkg for pkg in newly_installed if pkg not in requested_set]
+    )
     dep_text = (
         _('with {dep_count} dependencies').format(dep_count=dep_count)
         if dep_count > 0
@@ -280,5 +333,5 @@ def install_with_manager(package_name: str, manager: str):
     console.print(
         _(
             '[bold green]✔ Successfully installed {package_name}[/] {dep_text}'
-        ).format(package_name=package_name, dep_text=dep_text)
+        ).format(package_name=package_label, dep_text=dep_text)
     )

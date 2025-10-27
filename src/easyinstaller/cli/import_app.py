@@ -88,16 +88,16 @@ def import_packages(
                         manager=manager
                     )
                 )
-                for package_id in package_ids:
-                    try:
-                        install_with_manager(package_id, manager=manager)
-                    except SystemExit as e:
-                        if e.code != 0:
-                            print(
-                                _(
-                                    '[bold red]Failed to install {package_id}. Continuing with next package...[/bold red]'
-                                ).format(package_id=package_id)
-                            )
+                try:
+                    install_with_manager(package_ids, manager=manager)
+                except SystemExit as e:
+                    if e.code != 0:
+                        print(
+                            _(
+                                '[bold red]Failed to install one or more packages ({manager}).[/bold red]'
+                            ).format(manager=manager)
+                        )
+                        continue
                 print(
                     _(
                         '[bold green]✔ Installation process for {manager} complete.[/bold green]'
