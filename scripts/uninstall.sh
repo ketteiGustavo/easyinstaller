@@ -9,6 +9,8 @@ readonly BINARY_NAME="ei"
 readonly INSTALL_DIR="/usr/local/bin"
 readonly MAN_DIR="/usr/share/man/man1"
 readonly DATA_DIR="/usr/local/share/easyinstaller"
+readonly USER_CONFIG_SUBDIR=".config/easyinstaller"
+readonly USER_DATA_SUBDIR=".local/share/easyinstaller"
 
 # --- Functions ---
 
@@ -20,6 +22,44 @@ check_privileges() {
     if [ "$(id -u)" -ne 0 ]; then
         info "This script requires superuser privileges. Please run with sudo."
         exit 1
+    fi
+}
+
+get_target_home() {
+    if [ -n "${SUDO_USER:-}" ] && [ "${SUDO_USER}" != "root" ]; then
+        local user_home
+        user_home=$(getent passwd "${SUDO_USER}" | cut -d: -f6)
+        if [ -n "${user_home}" ]; then
+            echo "${user_home}"
+            return
+        fi
+    fi
+
+    echo "${HOME}"
+}
+
+# --- Cleanup helpers ---
+
+remove_user_dirs() {
+    local home_dir
+    home_dir=$(get_target_home)
+
+    if [ -z "${home_dir}" ]; then
+        info "Could not determine target user's home directory; skipping user data cleanup."
+        return
+    fi
+
+    local user_config="${home_dir}/${USER_CONFIG_SUBDIR}"
+    local user_data="${home_dir}/${USER_DATA_SUBDIR}"
+
+    if [ -d "${user_config}" ]; then
+        info "Removing user config directory ${user_config}..."
+        rm -rf "${user_config}"
+    fi
+
+    if [ -d "${user_data}" ]; then
+        info "Removing user data directory ${user_data}..."
+        rm -rf "${user_data}"
     fi
 }
 
@@ -46,6 +86,8 @@ main() {
     info "Removing data directory $DATA_DIR..."
     # This will remove the uninstall script itself.
     rm -rf "$DATA_DIR"
+
+    remove_user_dirs
 
     info "\033[1;32m✔ $PROJECT_NAME has been successfully uninstalled.\033[0m"
 }
