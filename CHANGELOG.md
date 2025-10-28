@@ -27,3 +27,4 @@
 - :🐛: fix: correcao de bug em dir (por: Luiz Gustavo em 27-10-2025 20:23)
 - :🐛: fix: correcao em bug de diretorio (por: Luiz Gustavo em 27-10-2025 20:37)
 - :🔧: chore: script de uninstall (por: Luiz Gustavo em 27-10-2025 20:52)
+- :🐛: fix: correcao de bug que não instalava (por: Luiz Gustavo em 28-10-2025 08:52)

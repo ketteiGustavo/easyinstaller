@@ -25,7 +25,7 @@ def apt(
             ).format(package=package)
         )
         try:
-            install_with_manager(package_name=package, manager='apt')
+            install_with_manager(package_names=package, manager='apt')
         except Exception as e:
             console.print(
                 _(

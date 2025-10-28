@@ -25,7 +25,7 @@ def snap(
             ).format(package=package)
         )
         try:
-            install_with_manager(package_name=package, manager='snap')
+            install_with_manager(package_names=package, manager='snap')
         except Exception as e:
             console.print(
                 _(

@@ -30,7 +30,7 @@ def flatpak(
         )
         try:
             # This is where the search logic will go
-            install_with_manager(package_name=package, manager='flatpak')
+            install_with_manager(package_names=package, manager='flatpak')
         except Exception as e:
             console.print(
                 _(

@@ -79,7 +79,7 @@ def add(
             )
             try:
                 install_with_manager(
-                    package_name=package['id'], manager=package['source']
+                    package_names=package['id'], manager=package['source']
                 )
             except Exception as e:
                 console.print(

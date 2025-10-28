@@ -1,6 +1,6 @@
 [project]
 name = "easyinstaller"
-version="0.1.20"
+version="0.1.21"
 description = "A universal installation manager for Linux."
 authors = [{ name = "Luiz Gustavo", email = "luizgcesar@gmail.com" }]
 readme = "README.md"
